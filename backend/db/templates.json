@@ -1,0 +1,93 @@
+[
+    {
+        "id": "developer",
+        "name": "New Developer",
+        "description": "Software Engineer with standard dev tools access",
+        "icon": "fa-code",
+        "category": "IT",
+        "default_values": {
+            "department": "IT",
+            "company": "VibeCode",
+            "title": "Software Engineer",
+            "physicalDeliveryOfficeName": "Remote",
+            "description": "Developer account with standard access"
+        },
+        "default_groups": [
+            "VPN Users",
+            "Developers"
+        ]
+    },
+    {
+        "id": "sales",
+        "name": "Sales Manager",
+        "description": "Sales department employee with CRM access",
+        "icon": "fa-handshake",
+        "category": "Sales",
+        "default_values": {
+            "department": "Sales",
+            "company": "VibeCode",
+            "title": "Sales Manager",
+            "physicalDeliveryOfficeName": "Moscow Office",
+            "description": "Sales team member"
+        },
+        "default_groups": [
+            "VPN Users",
+            "CRM Users"
+        ]
+    },
+    {
+        "id": "marketing",
+        "name": "Marketing Specialist",
+        "description": "Marketing department with design tools",
+        "icon": "fa-bullhorn",
+        "category": "Marketing",
+        "default_values": {
+            "department": "Marketing",
+            "company": "VibeCode",
+            "title": "Marketing Specialist",
+            "physicalDeliveryOfficeName": "Moscow Office",
+            "description": "Marketing team member"
+        },
+        "default_groups": [
+            "VPN Users",
+            "Design Tools"
+        ]
+    },
+    {
+        "id": "support",
+        "name": "IT Support",
+        "description": "Helpdesk and technical support staff",
+        "icon": "fa-headset",
+        "category": "IT",
+        "default_values": {
+            "department": "IT Support",
+            "company": "VibeCode",
+            "title": "Support Engineer",
+            "physicalDeliveryOfficeName": "Moscow Office",
+            "description": "IT Support team member"
+        },
+        "default_groups": [
+            "VPN Users",
+            "Helpdesk"
+        ]
+    },
+    {
+        "id": "executive",
+        "name": "Executive",
+        "description": "C-Level and senior management",
+        "icon": "fa-user-tie",
+        "category": "Management",
+        "default_values": {
+            "department": "Management",
+            "company": "VibeCode",
+            "title": "Executive",
+            "physicalDeliveryOfficeName": "Moscow Office",
+            "description": "Executive account"
+        },
+        "default_groups": [
+            "VPN Users",
+            "Executives",
+            "All Staff"
+        ]
+    }
+]

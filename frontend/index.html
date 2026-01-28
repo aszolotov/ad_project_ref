@@ -1,0 +1,3865 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AD Enterprise Control v7.3</title>
+
+    <!-- Bootstrap CSS -->
+    <!-- DataTables CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <!-- SortableJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --primary-color: #4f46e5;
+            --primary-dark: #4338ca;
+            --bg-color: #f3f4f6;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Styles */
+        #sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: #111827;
+            color: #e5e7eb;
+            transition: margin-left 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #sidebar.collapsed {
+            margin-left: calc(-1 * var(--sidebar-width));
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid #374151;
+        }
+
+        .sidebar-brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-profile {
+            padding: 20px 24px;
+            border-bottom: 1px solid #374151;
+            background: #1f2937;
+        }
+
+        .user-profile small {
+            display: block;
+            color: #9ca3af;
+            margin-top: 4px;
+        }
+
+        .nav-item {
+            margin: 4px 12px;
+        }
+
+        .nav-link {
+            color: #d1d5db;
+            padding: 12px 16px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .nav-link:hover {
+            background: #374151;
+            color: white;
+        }
+
+        .nav-link.active {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+        }
+
+        .nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .nav-divider {
+            margin: 20px 24px 10px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #6b7280;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        /* Content Area */
+        #content {
+            margin-left: var(--sidebar-width);
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #content.expanded {
+            margin-left: 0;
+        }
+
+        /* Topbar */
+        .topbar {
+            background: white;
+            padding: 16px 32px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+        }
+
+        /* Cards & Widgets */
+        .main-container {
+            padding: 32px;
+            flex: 1;
+        }
+
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            background: white;
+            transition: transform 0.2s;
+            margin-bottom: 24px;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        /* Tables */
+        .table-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+        }
+
+        .table th {
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            border-bottom-width: 2px;
+        }
+
+        .table td {
+            vertical-align: middle;
+            padding: 16px 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: #e5e7eb;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #4b5563;
+            font-weight: 600;
+            margin-right: 12px;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-active::before {
+            content: '';
+            display: block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .status-disabled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-disabled::before {
+            content: '';
+            display: block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        /* Search */
+        .search-wrapper {
+            position: relative;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 48px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #f9fafb;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            background: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            outline: none;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+
+        #global-search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            margin-top: 8px;
+            display: none;
+            z-index: 1050;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+        }
+
+        .search-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f3f4f6;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+
+        .search-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-item:hover {
+            background: #f9fafb;
+        }
+
+        /* Login Screen */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #111827;
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Loaders & Toasts */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1100;
+        }
+
+        /* Modal Tweaks */
+        .modal-content {
+            border-radius: 16px;
+            border: none;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #f3f4f6;
+            padding: 20px 24px;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #f3f4f6;
+            padding: 20px 24px;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .form-control,
+        .form-select {
+            padding: 10px 14px;
+            border-radius: 8px;
+            border-color: #d1d5db;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        /* Wizard Styles */
+        .wizard-progress {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 0;
+        }
+
+        .wizard-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .wizard-step-line {
+            flex: 1;
+            height: 2px;
+            background: #e5e7eb;
+            margin: 0 10px;
+            max-width: 80px;
+        }
+
+        .wizard-step-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #9ca3af;
+            transition: all 0.3s;
+        }
+
+        .wizard-step-circle.active {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.2);
+        }
+
+        .wizard-step-circle.completed {
+            background: #10b981;
+            color: white;
+        }
+
+        .wizard-step-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #6b7280;
+        }
+
+        .wizard-step[data-step] .wizard-step-circle.active~.wizard-step-label {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .wizard-content {
+            min-height: 400px;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .template-card {
+            padding: 30px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            height: 100%;
+        }
+
+        .template-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .template-card.selected {
+            border-color: var(--primary-color);
+            background: #eef2ff;
+            border-width: 3px;
+        }
+
+        .template-card h5 {
+            margin: 15px 0 10px;
+            font-size: 16px;
+        }
+
+        .template-card .text-muted {
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        /* Workflow Editor */
+        .wf-step-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .wf-json-editor {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            background-color: #1e293b;
+            color: #a5b4fc;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        /* DataTables Custom */
+        .dataTables_wrapper .dataTables_filter input {
+            border-radius: 8px;
+            padding: 6px 12px;
+            border: 1px solid #d1d5db;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: var(--primary-color) !important;
+            color: white !important;
+            border: none;
+            border-radius: 6px;
+        }
+
+        .table-responsive {
+            overflow: visible;
+            /* Important for dropdowns to not be clipped */
+        }
+
+        .cursor-pointer {
+            cursor: pointer;
+        }
+
+        /* RBAC Visibility */
+        body:not(.show-users) .nav-item-users {
+            display: none !important;
+        }
+
+        body:not(.show-groups) .nav-item-groups {
+            display: none !important;
+        }
+
+        body:not(.show-computers) .nav-item-computers {
+            display: none !important;
+        }
+
+        body:not(.show-tasks) .nav-item-tasks {
+            display: none !important;
+        }
+
+        body:not(.show-reports) .nav-item-reports {
+            display: none !important;
+        }
+
+        body:not(.show-workflows) .nav-item-workflows {
+            display: none !important;
+        }
+
+        body:not(.show-logs) .nav-item-logs {
+            display: none !important;
+        }
+
+        body:not(.show-backups) .nav-item-backups {
+            display: none !important;
+        }
+
+        body:not(.show-bulk) .nav-item-bulk {
+            display: none !important;
+        }
+
+        body:not(.show-plugins) .nav-item-plugins {
+            display: none !important;
+        }
+
+        body:not(.perm-manage-users) .require-manage-users {
+            display: none !important;
+        }
+
+        body:not(.perm-manage-groups) .require-manage-groups {
+            display: none !important;
+        }
+
+        body:not(.perm-manage-workflows) .require-manage-workflows {
+            display: none !important;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .health-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .health-ok {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .health-warn {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .health-crit {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .quick-action-btn {
+            text-align: left;
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: #f8fafc;
+            transition: all 0.2s;
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .quick-action-btn:hover {
+            background: white;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen">
+        <div class="login-card">
+            <div class="text-center mb-5">
+                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex p-3 mb-3">
+                    <i class="fab fa-windows fa-3x"></i>
+                </div>
+                <h3 class="fw-bold mb-1">Вход в систему</h3>
+                <p class="text-muted">AD Enterprise Control Panel</p>
+            </div>
+            <form id="login-form">
+                <div class="mb-4">
+                    <label class="form-label">Имя пользователя</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="fas fa-user text-muted"></i></span>
+                        <input type="text" class="form-control form-control-lg" id="l-username"
+                            placeholder="user (без домена)" required>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">Пароль</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="fas fa-lock text-muted"></i></span>
+                        <input type="password" class="form-control form-control-lg" id="l-password"
+                            placeholder="••••••••" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold py-3">Войти в систему</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- GLOBAL LOADER -->
+    <div class="loading-overlay">
+        <div class="text-center">
+            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+            <div class="fw-bold text-muted">Обработка запроса...</div>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="sidebar-brand">
+                <i class="fas fa-shield-alt text-primary fa-lg"></i>
+                <span>AD Admin v7.3</span>
+            </a>
+        </div>
+
+        <div class="user-profile">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
+                    style="width: 40px; height: 40px;">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div style="overflow: hidden;">
+                    <div class="fw-bold text-white text-truncate" id="user-display-name">Загрузка...</div>
+                    <small id="user-display-role">...</small>
+                </div>
+            </div>
+        </div>
+
+        <nav class="flex-grow-1 py-3 overflow-auto">
+            <div class="nav-divider">Главное</div>
+            <nav class="nav flex-column">
+                <a href="#" class="nav-link active" onclick="showTab('dashboard')"><i
+                        class="fa-solid fa-chart-pie me-2"></i>Дашборд</a>
+                <a href="#" class="nav-link" onclick="showTab('profile')"><i class="fa-solid fa-user me-2"></i>Мой
+                    профиль</a>
+                <a href="#" class="nav-link" onclick="showTab('directory')"><i
+                        class="fa-solid fa-address-book me-2"></i>Справочник</a>
+
+                <div class="admin-only">
+                    <hr class="border-secondary mx-3">
+                    <small class="text-muted px-4">АДМИНИСТРИРОВАНИЕ</small>
+                    <div class="nav-item nav-item-users"><a class="nav-link" onclick="showPage('users')"><i
+                                class="fas fa-users"></i><span>Пользователи</span></a></div>
+                    <div class="nav-item nav-item-groups"><a class="nav-link" onclick="showPage('groups')"><i
+                                class="fas fa-layer-group"></i><span>Группы</span></a></div>
+                    <div class="nav-item nav-item-computers"><a class="nav-link" onclick="showPage('computers')"><i
+                                class="fas fa-desktop"></i><span>Компьютеры</span></a></div>
+                    <div class="nav-item nav-item-tasks"><a class="nav-link" onclick="showPage('tasks')"><i
+                                class="fas fa-check-double"></i><span>Задачи</span></a></div>
+
+                    <div class="nav-divider">Инструменты</div>
+                    <div class="nav-item nav-item-bulk"><a class="nav-link" onclick="showPage('bulk')"><i
+                                class="fas fa-magic"></i><span>Массовые операции</span></a></div>
+                    <div class="nav-item nav-item-reports"><a class="nav-link" onclick="showPage('reports')"><i
+                                class="fas fa-chart-pie"></i><span>Отчеты</span></a></div>
+                    <div class="nav-item nav-item-workflows"><a class="nav-link" onclick="showPage('workflows')"><i
+                                class="fas fa-project-diagram"></i><span>Workflows</span></a></div>
+                    <div class="nav-item nav-item-logs"><a class="nav-link" onclick="showPage('logs')"><i
+                                class="fas fa-history"></i><span>Журнал аудита</span></a></div>
+                    <div class="nav-item nav-item-backups"><a class="nav-link" onclick="showPage('backup')"><i
+                                class="fas fa-archive"></i><span>Бэкапы</span></a></div>
+
+                    <div class="nav-divider">Система</div>
+                    <div class="nav-item nav-item-plugins"><a class="nav-link" onclick="showPage('plugins')"><i
+                                class="fas fa-plug"></i><span>Плагины</span></a></div>
+                </div>
+            </nav>
+
+            <div class="p-3 border-top border-secondary">
+                <button class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-2"
+                    onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> <span>Выйти</span>
+                </button>
+            </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main id="content">
+        <header class="topbar">
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-light border" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                <h4 class="mb-0 fw-bold text-secondary" id="page-title">Дашборд</h4>
+            </div>
+
+            <div class="search-wrapper mx-auto d-none d-md-block">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" id="global-search"
+                    placeholder="Поиск по Active Directory (Ctrl+K)...">
+                <div id="global-search-results"></div>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-light border position-relative" onclick="refreshAll()" title="Обновить данные">
+                    <i class="fas fa-sync-alt text-primary"></i>
+                </button>
+                <div class="dropdown">
+                    <button class="btn btn-light border d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#pwd-modal"><i
+                                    class="fas fa-key me-2"></i>Сменить пароль</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-danger" href="#" onclick="logout()">Выход</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-container">
+
+            <!-- DASHBOARD PAGE -->
+            <div id="page-dashboard" class="page-section">
+                <!-- Top Bar: Health & Alerts -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h4 class="fw-bold mb-1">Обзор инфраструктуры</h4>
+                        <p class="text-muted mb-0" id="current-date">Загрузка...</p>
+                    </div>
+                    <div class="d-flex gap-3">
+                        <div id="domain-health-badge" class="health-badge health-ok">
+                            <i class="fas fa-circle"></i> Проверка статуса...
+                        </div>
+                        <button class="btn btn-light border" onclick="refreshAll()"><i
+                                class="fas fa-sync-alt"></i></button>
+                    </div>
+                </div>
+
+                <!-- KPI Row -->
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="stat-label">Всего пользователей</div>
+                                <div class="stat-value" id="kpi-users-total">-</div>
+                            </div>
+                            <div class="bg-primary bg-opacity-10 p-2 rounded text-primary"><i
+                                    class="fas fa-users fa-lg"></i></div>
+                        </div>
+                        <div class="mt-3 d-flex gap-2 text-muted small">
+                            <span class="text-success"><i class="fas fa-check-circle me-1"></i><span
+                                    id="kpi-users-active">-</span> активных</span>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card border-start border-4 border-danger">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="stat-label">Заблокировано</div>
+                                <div class="stat-value text-danger" id="kpi-users-locked">-</div>
+                            </div>
+                            <div class="bg-danger bg-opacity-10 p-2 rounded text-danger"><i
+                                    class="fas fa-user-lock fa-lg"></i></div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger mt-3 w-100"
+                            onclick="showPage('users'); $('#filter-status').val('locked'); loadUsers();">Показать
+                            список</button>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="stat-label">Ошибки входа (24ч)</div>
+                                <div class="stat-value" id="kpi-login-fails">-</div>
+                            </div>
+                            <div class="bg-warning bg-opacity-10 p-2 rounded text-warning"><i
+                                    class="fas fa-shield-alt fa-lg"></i></div>
+                        </div>
+                        <div class="mt-3 text-muted small">Подозрительная активность</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="stat-label">Ожидают согласования</div>
+                                <div class="stat-value text-primary" id="kpi-approvals">-</div>
+                            </div>
+                            <div class="bg-info bg-opacity-10 p-2 rounded text-info"><i class="fas fa-clock fa-lg"></i>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary mt-3 w-100" onclick="showPage('tasks')">Перейти к
+                            задачам</button>
+                    </div>
+                </div>
+
+                <!-- Charts & Quick Actions Row -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-8">
+                        <div class="card h-100 p-4 border-0 shadow-sm">
+                            <h6 class="fw-bold mb-3">Динамика операций (7 дней)</h6>
+                            <div style="height: 300px;">
+
+                                <!-- USERS PAGE -->
+                                <div id="page-users" class="page-section d-none">
+                                    <div class="table-container">
+                                        <div
+                                            class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+                                            <div class="d-flex gap-2">
+                                                <button class="btn btn-primary fw-bold require-manage-users"
+                                                    onclick="openCreateUser()"><i
+                                                        class="fas fa-plus me-2"></i>Создать</button>
+                                                <div class="btn-group">
+                                                    <button class="btn btn-outline-secondary dropdown-toggle"
+                                                        data-bs-toggle="dropdown">Действия</button>
+                                                    <ul class="dropdown-menu">
+                                                        <li><a class="dropdown-item text-danger" href="#"
+                                                                onclick="bulkAction('disable')"><i
+                                                                    class="fas fa-ban me-2"></i>Отключить выбранных</a>
+                                                        </li>
+                                                        <li><a class="dropdown-item text-success" href="#"
+                                                                onclick="bulkAction('enable')"><i
+                                                                    class="fas fa-check me-2"></i>Включить выбранных</a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex gap-2 align-items-center">
+                                                <select class="form-select" id="filter-ou" onchange="loadUsers()"
+                                                    style="max-width: 200px;"></select>
+                                                <select class="form-select" id="filter-status" onchange="loadUsers()"
+                                                    style="width: 150px;">
+                                                    <option value="all">Все статусы</option>
+                                                    <option value="active">Активные</option>
+                                                    <option value="disabled">Отключенные</option>
+                                                </select>
+                                                <button class="btn btn-light border" onclick="exportUsers()"
+                                                    title="Экспорт в CSV"><i class="fas fa-download"></i></button>
+                                            </div>
+                                        </div>
+
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width: 40px;"><input type="checkbox"
+                                                                class="form-check-input" id="select-all-users"></th>
+                                                        <th>Пользователь</th>
+                                                        <th>Логин</th>
+                                                        <th>Email</th>
+                                                        <th>Отдел</th>
+                                                        <th>Статус</th>
+                                                        <th class="text-end">Действия</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="users-list">
+                                                    <!-- Users loaded via JS -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <div class="d-flex justify-content-between align-items-center mt-4">
+                                            <div class="text-muted small" id="users-info">Показано 0 из 0</div>
+                                            <nav>
+                                                <ul class="pagination mb-0" id="users-pagination"></ul>
+                                            </nav>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- GROUPS PAGE -->
+                                <div id="page-groups" class="page-section d-none">
+                                    <div class="table-container">
+                                        <div class="d-flex justify-content-between mb-4">
+                                            <h5 class="fw-bold">Группы безопасности</h5>
+                                            <button class="btn btn-primary require-manage-groups"
+                                                onclick="openGroupModal()"><i class="fas fa-plus me-2"></i>Создать
+                                                группу</button>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table table-hover" id="groups-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Название группы</th>
+                                                        <th>Количество участников</th>
+                                                        <th>Описание</th>
+                                                        <th>Действия</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="groups-list"></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- COMPUTERS PAGE -->
+                                <div id="page-computers" class="page-section d-none">
+                                    <div class="table-container">
+                                        <h5 class="fw-bold mb-4">Компьютеры в домене</h5>
+                                        <div class="table-responsive">
+                                            <table class="table table-hover" id="computers-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Имя хоста</th>
+                                                        <th>DNS / IP</th>
+                                                        <th>Операционная система</th>
+                                                        <th>Последний вход</th>
+                                                        <th>Действия</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="computers-list"></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- WORKFLOWS PAGE -->
+                                <div id="page-workflows" class="page-section d-none">
+                                    <div class="table-container">
+                                        <div class="d-flex justify-content-between mb-4">
+                                            <h5 class="fw-bold">Автоматизация (Workflows)</h5>
+                                            <button class="btn btn-primary require-manage-workflows"
+                                                onclick="openWorkflowModal()"><i class="fas fa-plus me-2"></i>Новый
+                                                процесс</button>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table table-hover" id="workflows-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Название</th>
+                                                        <th>Триггер</th>
+                                                        <th>Действия</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="workflows-list"></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- REPORTS PAGE -->
+                                <div id="page-reports" class="page-section d-none">
+                                    <div class="d-flex justify-content-between align-items-center mb-4">
+                                        <h5 class="fw-bold mb-0">Отчеты и аналитика</h5>
+                                        <button class="btn btn-primary" onclick="openReportBuilder()">
+                                            <i class="fas fa-magic me-2"></i>Конструктор отчетов
+                                        </button>
+                                    </div>
+                                    <div class="row g-4 mb-4">
+                                        <div class="col-md-6">
+                                            <div class="card p-4 cursor-pointer h-100"
+                                                onclick="loadReport('disabled-users')">
+                                                <div class="d-flex gap-3">
+                                                    <div class="bg-danger bg-opacity-10 p-3 rounded text-danger"><i
+                                                            class="fas fa-user-slash fa-2x"></i></div>
+                                                    <div>
+                                                        <h5>Отключенные пользователи</h5>
+                                                        <p class="text-muted mb-0">Генерирует список всех отключенных
+                                                            учетных записей с
+                                                            датой отключения.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card p-4 cursor-pointer h-100"
+                                                onclick="loadReport('inactive-users')">
+                                                <div class="d-flex gap-3">
+                                                    <div class="bg-warning bg-opacity-10 p-3 rounded text-warning"><i
+                                                            class="fas fa-history fa-2x"></i></div>
+                                                    <div>
+                                                        <h5>Неактивные пользователи</h5>
+                                                        <p class="text-muted mb-0">Пользователи, не входившие в домен
+                                                            более 90 дней.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <h5 class="fw-bold mb-3 mt-4">Compliance & Security</h5>
+                                    <div class="row g-4 mb-4">
+                                        <div class="col-md-6">
+                                            <div class="card p-4 cursor-pointer h-100"
+                                                onclick="loadReport('compliance/sox-access')">
+                                                <div class="d-flex gap-3">
+                                                    <div class="bg-primary bg-opacity-10 p-3 rounded text-primary"><i
+                                                            class="fas fa-user-shield fa-2x"></i></div>
+                                                    <div>
+                                                        <h5>SOX: Административный доступ</h5>
+                                                        <p class="text-muted mb-0">Список пользователей с
+                                                            привилегированными правами (Domain
+                                                            Admins, etc).</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card p-4 cursor-pointer h-100"
+                                                onclick="loadReport('compliance/gdpr-inactive')">
+                                                <div class="d-flex gap-3">
+                                                    <div class="bg-info bg-opacity-10 p-3 rounded text-info"><i
+                                                            class="fas fa-user-clock fa-2x"></i></div>
+                                                    <div>
+                                                        <h5>GDPR: Устаревшие данные</h5>
+                                                        <p class="text-muted mb-0">Пользователи, отключенные более года
+                                                            назад (кандидаты на
+                                                            удаление).</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div id="report-result-card" class="table-container d-none">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h5 class="fw-bold mb-0" id="report-title">Результаты отчета</h5>
+                                            <button class="btn btn-outline-secondary btn-sm"
+                                                onclick="$('#report-result-card').addClass('d-none')">Закрыть</button>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-striped" id="report-table">
+                                                <thead id="report-head"></thead>
+                                                <tbody id="report-body"></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- MASS OPERATIONS PAGE -->
+                                <div id="page-bulk" class="page-section d-none">
+                                    <div class="table-container">
+                                        <h5 class="fw-bold mb-4">Массовое обновление через Excel</h5>
+
+                                        <div class="row g-4">
+                                            <div class="col-md-6">
+                                                <div class="border rounded p-4 bg-light">
+                                                    <h6>1. Подготовьте файл</h6>
+                                                    <p class="text-muted small">Файл должен быть в формате .xlsx. Первая
+                                                        строка - заголовки.
+                                                        Один из столбцов должен содержать уникальный идентификатор
+                                                        (Login, ID или Email).
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="border rounded p-4 bg-light">
+                                                    <h6>2. Загрузите файл</h6>
+                                                    <div class="input-group mb-3">
+                                                        <input type="file" class="form-control" id="excel-file"
+                                                            accept=".xlsx">
+                                                        <button class="btn btn-primary"
+                                                            onclick="uploadExcel()">Загрузить</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div id="bulk-preview" class="mt-4 d-none">
+                                            <h6 class="fw-bold">Предпросмотр (первые 5 строк)</h6>
+                                            <div class="table-responsive border rounded mb-3">
+                                                <table class="table table-sm table-bordered mb-0" id="bulk-table">
+                                                </table>
+                                            </div>
+
+                                            <div
+                                                class="d-flex align-items-center gap-3 bg-warning bg-opacity-10 p-3 rounded">
+                                                <div>
+                                                    <label class="fw-bold form-label mb-0">Выберите
+                                                        столбец-идентификатор:</label>
+                                                    <small class="d-block text-muted">По этому полю будет поиск
+                                                        пользователей в AD</small>
+                                                </div>
+                                                <select class="form-select w-auto" id="bulk-key-col"></select>
+                                                <button class="btn btn-success fw-bold px-4" onclick="execMassUpdate()">
+                                                    <i class="fas fa-play me-2"></i>Выполнить обновление
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- LOGS PAGE -->
+                                <div id="page-logs" class="page-section d-none">
+                                    <div class="table-container">
+                                        <h5 class="fw-bold mb-4">Журнал аудита системы</h5>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-hover" id="logs-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Время</th>
+                                                        <th>Администратор</th>
+                                                        <th>Действие</th>
+                                                        <th>Объект</th>
+                                                        <th>Детали</th>
+                                                        <th>Статус</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="audit-list"></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- BACKUP PAGE -->
+                                <div id="page-backup" class="page-section d-none">
+                                    <div class="table-container">
+                                        <h5 class="fw-bold mb-4">Резервные копии изменений</h5>
+                                        <div class="alert alert-info d-flex gap-3 align-items-center">
+                                            <i class="fas fa-info-circle fa-2x"></i>
+                                            <div>
+                                                <strong>Автоматическое резервирование</strong>
+                                                <p class="mb-0">Система создает снимок атрибутов объектов перед любым
+                                                    массовым изменением
+                                                    или удалением. Вы можете откатить изменения здесь.</p>
+                                            </div>
+                                        </div>
+                                        <ul class="list-group mt-4" id="backup-list"></ul>
+                                    </div>
+                                </div>
+
+                                <!-- PLUGINS PAGE -->
+                                <div id="page-plugins" class="page-section d-none">
+                                    <div class="table-container">
+                                        <div class="d-flex justify-content-between align-items-center mb-4">
+                                            <h5 class="fw-bold mb-0">Установленные плагины</h5>
+                                            <button class="btn btn-outline-primary btn-sm"
+                                                onclick="openPluginTestModal()">
+                                                <i class="fas fa-flask me-2"></i>Тестировать плагин
+                                            </button>
+                                        </div>
+                                        <div id="plugins-list" class="row g-3"></div>
+                                    </div>
+                                </div>
+
+                            </div>
+    </main>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- USER MODAL (CREATE / EDIT) -->
+    <div class="modal fade" id="user-modal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Пользователь</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-pills mb-4" id="user-tabs">
+                        <li class="nav-item"><a class="nav-link active" data-bs-toggle="pill"
+                                href="#u-tab-gen">Основное</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="pill" href="#u-tab-grp">Группы</a></li>
+                        <li class="nav-item"><a class="nav-link text-danger" data-bs-toggle="pill"
+                                href="#u-tab-danger">Управление</a></li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <!-- General Tab -->
+                        <div class="tab-pane fade show active" id="u-tab-gen">
+                            <form id="user-form">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Имя (Given Name) <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="givenName" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Фамилия (Surname) <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="sn" required>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label">Логин (Logon Name) <span
+                                                class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" name="sAMAccountName" required>
+                                            <span class="input-group-text bg-light text-muted"
+                                                id="domain-suffix">@domain.local</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label">Пароль</label>
+                                        <input type="password" class="form-control" name="password"
+                                            placeholder="Оставьте пустым, чтобы не менять">
+                                        <small class="text-muted">Минимум 8 символов, буквы разного регистра и
+                                            цифры.</small>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label">Подразделение (OU)</label>
+                                        <select class="form-select" name="ou" id="n-ou"></select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Должность</label>
+                                        <input type="text" class="form-control" name="title">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Отдел</label>
+                                        <input type="text" class="form-control" name="department">
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" name="mail">
+                                    </div>
+                                    <div class="col-md-12 mt-4">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="enabled" checked>
+                                            <label class="form-check-label fw-bold">Учетная запись активна</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Groups Tab -->
+                        <div class="tab-pane fade" id="u-tab-grp">
+                            <div class="bg-light p-3 rounded mb-3">
+                                <label class="form-label">Добавить в группу:</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="grp-search-input"
+                                        placeholder="Начните вводить название...">
+                                    <button class="btn btn-outline-primary" onclick="addUserToGroup()">Добавить</button>
+                                </div>
+                            </div>
+                            <h6 class="fw-bold">Текущие группы:</h6>
+                            <ul class="list-group" id="user-groups-list">
+                                <li class="list-group-item text-center text-muted">Сначала сохраните пользователя</li>
+                            </ul>
+                        </div>
+
+                        <!-- Management Tab -->
+                        <div class="tab-pane fade" id="u-tab-danger">
+                            <div class="d-grid gap-3">
+                                <div class="border border-warning rounded p-3 bg-warning bg-opacity-10">
+                                    <h6 class="fw-bold text-warning">Сброс пароля</h6>
+                                    <p class="small mb-2">Принудительно установить новый пароль.</p>
+                                    <button class="btn btn-warning text-dark btn-sm" onclick="resetPwd()">Сбросить
+                                        пароль</button>
+                                </div>
+
+                                <div class="border border-info rounded p-3 bg-info bg-opacity-10">
+                                    <h6 class="fw-bold text-info">Разблокировка</h6>
+                                    <p class="small mb-2">Снять блокировку из-за неверных попыток входа.</p>
+                                    <button class="btn btn-info text-white btn-sm" onclick="unlockUsr()">Разблокировать
+                                        аккаунт</button>
+                                </div>
+
+                                <div class="border border-danger rounded p-3 bg-danger bg-opacity-10">
+                                    <h6 class="fw-bold text-danger">Удаление</h6>
+                                    <p class="small mb-2">Безвозвратное удаление пользователя из Active Directory.</p>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteUsr()">Удалить
+                                        пользователя</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary px-4 fw-bold" onclick="saveUser()">Сохранить
+                        изменения</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GROUP MODAL (CREATE) -->
+    <div class="modal fade" id="group-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Создание группы</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="group-form">
+                        <div class="mb-3">
+                            <label class="form-label">Название группы (CN) <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="grp-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Подразделение (OU)</label>
+                            <select class="form-select" id="grp-ou"></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Описание</label>
+                            <input type="text" class="form-control" id="grp-desc">
+                        </div>
+                        <div class="alert alert-secondary small mb-0">
+                            <i class="fas fa-info-circle me-1"></i> Будет создана Global Security Group.
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary" onclick="saveGroup()">Создать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WORKFLOW MODAL (EDITOR) -->
+    <div class="modal fade" id="wf-modal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Редактор Workflow</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">ID (Уникальный)</label>
+                            <input class="form-control font-monospace" id="wf-id" placeholder="my_workflow">
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label">Название</label>
+                            <input class="form-control" id="wf-name" placeholder="Описательное имя">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Триггер</label>
+                            <select class="form-select" id="wf-trigger">
+                                <option value="manual">Вручную</option>
+                                <option value="post_create">После создания User</option>
+                                <option value="post_modify">После изменения User</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Шаги выполнения</label>
+                        <div id="wf-steps-container" class="d-flex flex-column gap-2 mb-3">
+                            <!-- Steps will be rendered here -->
+                            <div class="text-center text-muted py-4 border rounded bg-light">
+                                Нет шагов. Добавьте первый шаг.
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary w-100 border-dashed"
+                            onclick="openStepTypeSelector()">
+                            <i class="fas fa-plus me-2"></i>Добавить шаг
+                        </button>
+                    </div>
+
+                    <!-- Hidden JSON editor for backward compatibility/debug -->
+                    <div class="accordion mb-3" id="wf-advanced">
+                        <div class="accordion-item border-0">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed py-2 small bg-light text-muted" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#wf-json-wrap">
+                                    <i class="fas fa-code me-2"></i>Режим JSON (для экспертов)
+                                </button>
+                            </h2>
+                            <div id="wf-json-wrap" class="accordion-collapse collapse">
+                                <div class="accordion-body p-0 pt-2">
+                                    <textarea class="form-control wf-json-editor" id="wf-json-editor" rows="6"
+                                        spellcheck="false"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-outline-danger" onclick="deleteWorkflow()"><i
+                            class="fas fa-trash me-2"></i>Удалить</button>
+                    <div>
+                        <button type="button" class="btn btn-light border me-2" data-bs-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-primary" onclick="saveWorkflow()">Сохранить
+                            Workflow</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP TYPE SELECTOR MODAL -->
+    <div class="modal fade" id="step-type-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Выберите тип шага</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="list-group list-group-flush" id="step-type-list">
+                        <!-- Types loaded from schema -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP EDITOR MODAL -->
+    <div class="modal fade" id="step-editor-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="step-editor-title">Настройка шага</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="step-editor-form">
+                        <!-- Fields generated from schema -->
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="applyStepChanges()">Применить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PASSWORD CHANGE MODAL -->
+    <div class="modal fade" id="pwd-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Смена моего пароля</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Текущий пароль</label>
+                        <input type="password" class="form-control" id="pwd-old">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Новый пароль</label>
+                        <input type="password" class="form-control" id="pwd-new">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary w-100" onclick="changeSelfPwd()">Подтвердить смену</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PLUGIN TEST MODAL -->
+    <div class="modal fade" id="plugin-test-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Тестирование плагинов</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Выберите событие (hook):</label>
+                        <select class="form-select" id="plugin-test-event">
+                            <option value="enrich_computers">enrich_computers</option>
+                            <option value="validate_user_create">validate_user_create</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Входные данные (JSON):</label>
+                        <textarea class="form-control font-monospace" id="plugin-test-data" rows="5">{}</textarea>
+                    </div>
+                    <div id="plugin-test-result" class="d-none">
+                        <label class="form-label fw-bold">Результат:</label>
+                        <pre class="bg-light p-3 border rounded" id="plugin-test-output"></pre>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="runPluginTest()">Запустить тест</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- REPORT BUILDER MODAL -->
+    <div class="modal fade" id="report-builder-modal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-chart-pie me-2"></i>Конструктор отчетов</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-4 border-end">
+                            <h6 class="fw-bold mb-3">1. Атрибуты (Колонки)</h6>
+                            <div id="rb-attributes-list" class="d-flex flex-column gap-2"
+                                style="max-height: 400px; overflow-y: auto;">
+                                <!-- Checkboxes loaded from schema -->
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <h6 class="fw-bold mb-3">2. Фильтры</h6>
+                            <div id="rb-filters-list" class="d-flex flex-column gap-2 mb-3">
+                                <!-- Filters added dynamically -->
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary border-dashed w-100"
+                                onclick="addReportFilter()">
+                                <i class="fas fa-plus me-2"></i>Добавить фильтр
+                            </button>
+                        </div>
+                    </div>
+                    <hr>
+                    <div id="rb-preview-area" class="d-none">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-bold mb-0">Предпросмотр (<span id="rb-count">0</span>)</h6>
+                            <button class="btn btn-sm btn-success" onclick="exportReportCSV()"><i
+                                    class="fas fa-file-csv me-2"></i>CSV</button>
+                        </div>
+                        <div class="table-responsive" style="max-height: 300px;">
+                            <table class="table table-sm table-bordered table-hover" id="rb-results-table">
+                                <thead></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="generateReport()">Сформировать отчет</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <option value="pre_create">pre_create - Перед созданием пользователя</option>
+    <option value="post_create">post_create - После создания пользователя</option>
+    <option value="pre_modify">pre_modify - Перед изменением</option>
+    <option value="post_modify">post_modify - После изменения</option>
+    <option value="validation">validation - Валидация данных</option>
+    </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Тестовые данные (JSON):</label>
+        <textarea class="form-control font-monospace" id="plugin-test-data" rows="8" style="font-size: 0.9rem;">
+{
+  "givenName": "Тест",
+  "sn": "Тестовый",
+  "sAMAccountName": "test.user",
+  "department": "IT",
+  "title": "Разработчик"
+}</textarea>
+        <small class="text-muted">Укажите тестовые данные в формате JSON</small>
+    </div>
+
+    <div id="plugin-test-result" class="bg-light p-3 rounded d-none">
+        <h6 class="fw-bold">Результат выполнения:</h6>
+        <pre id="plugin-test-output" class="mb-0 font-monospace small"
+            style="max-height: 300px; overflow-y: auto;"></pre>
+    </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Закрыть</button>
+        <button type="button" class="btn btn-primary px-4" onclick="runPluginTest()">
+            <i class="fas fa-play me-2"></i>Запустить тест
+        </button>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+
+    <!-- USER CREATION WIZARD MODAL -->
+    <div class="modal fade" id="user-wizard-modal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fas fa-user-plus me-2 text-primary"></i>
+                        Создание пользователя
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        onclick="closeUserWizard()"></button>
+                </div>
+
+                <!-- Progress Steps -->
+                <div class="px-4 pt-3 pb-0">
+                    <div class="wizard-progress">
+                        <div class="wizard-step" data-step="1">
+                            <div class="wizard-step-circle active">
+                                <i class="fas fa-th-large"></i>
+                            </div>
+                            <div class="wizard-step-label">Шаблон</div>
+                        </div>
+                        <div class="wizard-step-line"></div>
+                        <div class="wizard-step" data-step="2">
+                            <div class="wizard-step-circle">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="wizard-step-label">Основное</div>
+                        </div>
+                        <div class="wizard-step-line"></div>
+                        <div class="wizard-step" data-step="3">
+                            <div class="wizard-step-circle">
+                                <i class="fas fa-address-card"></i>
+                            </div>
+                            <div class="wizard-step-label">Контакты</div>
+                        </div>
+                        <div class="wizard-step-line"></div>
+                        <div class="wizard-step" data-step="4">
+                            <div class="wizard-step-circle">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="wizard-step-label">Группы</div>
+                        </div>
+                        <div class="wizard-step-line"></div>
+                        <div class="wizard-step" data-step="5">
+                            <div class="wizard-step-circle">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="wizard-step-label">Проверка</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-body">
+                    <!-- Step 1: Template Selection -->
+                    <div id="wizard-step-1" class="wizard-content active">
+                        <h5 class="mb-4">Выберите шаблон или начните с нуля</h5>
+                        <div id="templates-grid" class="row g-3">
+                            <!-- Templates loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Basic Info -->
+                    <div id="wizard-step-2" class="wizard-content d-none">
+                        <h5 class="mb-4">Основная информация</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Имя <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="wiz-givenName" required>
+                                <div class="form-text">Имя пользователя (например: Иван)</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Фамилия <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="wiz-sn" required>
+                                <div class="form-text">Фамилия (например: Иванов)</div>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">
+                                    Логин (sAMAccountName) <span class="text-danger">*</span>
+                                    <i class="fas fa-info-circle text-muted" data-bs-toggle="tooltip"
+                                        title="3-20 символов, только латиница и цифры"></i>
+                                </label>
+                                <input type="text" class="form-control" id="wiz-sAMAccountName" required>
+                                <div class="form-text">Будет сгенерирован автоматически из имени и фамилии</div>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Пароль <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="wiz-password" required>
+                                    <button class="btn btn-outline-secondary" type="button"
+                                        onclick="generatePassword()">
+                                        <i class="fas fa-random"></i> Сгенерировать
+                                    </button>
+                                </div>
+                                <div class="form-text">Минимум 8 символов, включая заглавные буквы и цифры</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Contact & Organization -->
+                    <div id="wizard-step-3" class="wizard-content d-none">
+                        <h5 class="mb-4">Контакты и организация</h5>
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" id="wiz-mail">
+                                <div class="form-text">Будет создан почтовый ящик</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Телефон</label>
+                                <input type="text" class="form-control" id="wiz-telephoneNumber"
+                                    placeholder="+7 (999) 123-45-67">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Мобильный</label>
+                                <input type="text" class="form-control" id="wiz-mobile"
+                                    placeholder="+7 (999) 123-45-67">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Отдел</label>
+                                <input type="text" class="form-control" id="wiz-department"
+                                    placeholder="IT, Sales, Marketing...">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Должность</label>
+                                <input type="text" class="form-control" id="wiz-title"
+                                    placeholder="Software Engineer, Manager...">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Компания</label>
+                                <input type="text" class="form-control" id="wiz-company" value="VibeCode">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Офис</label>
+                                <input type="text" class="form-control" id="wiz-office"
+                                    placeholder="Moscow Office, Remote...">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Groups Selection -->
+                    <div id="wizard-step-4" class="wizard-content d-none">
+                        <h5 class="mb-4">Группы и права доступа</h5>
+                        <div class="mb-3">
+                            <label class="form-label">Поиск групп:</label>
+                            <input type="text" class="form-control" id="wiz-group-search"
+                                placeholder="Начните вводить название группы...">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h6>Выбранные группы:</h6>
+                                <div id="wiz-selected-groups" class="d-flex flex-wrap gap-2 mb-3">
+                                    <!-- Selected groups badges here -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                            <h6>Доступные группы:</h6>
+                            <div id="wiz-groups-list">
+                                <!-- Groups list loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: Review & Confirm -->
+                    <div id="wizard-step-5" class="wizard-content d-none">
+                        <h5 class="mb-4">Проверка данных</h5>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Проверьте введённые данные перед созданием пользователя
+                        </div>
+                        <table class="table table-bordered">
+                            <tbody id="wiz-review-table">
+                                <!-- Review data here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-light border" id="wiz-btn-prev" onclick="prevWizardStep()">
+                        <i class="fas fa-chevron-left me-2"></i> Назад
+                    </button>
+                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal"
+                        onclick="closeUserWizard()">
+                        Отмена
+                    </button>
+                    <button type="button" class="btn btn-primary px-4" id="wiz-btn-next" onclick="nextWizardStep()">
+                        Далее <i class="fas fa-chevron-right ms-2"></i>
+                    </button>
+                    <button type="button" class="btn btn-success px-4 d-none" id="wiz-btn-create"
+                        onclick="createUserFromWizard()">
+                        <i class="fas fa-check me-2"></i> Создать пользователя
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Modal -->
+    <div id="progress-modal" class="modal fade" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center p-5">
+                    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;"></div>
+                    <h5 id="progress-message">Обработка...</h5>
+                    <div class="progress mt-3" style="height: 25px;">
+                        <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated"
+                            style="width: 0%">
+                            <span id="progress-percent">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        const API_URL = window.location.origin + "/api/v6";
+        let token = localStorage.getItem('ad_token');
+        let userRole = localStorage.getItem('ad_role');
+        let editingUserDN = null;
+        let editingWFId = null;
+        let currentSteps = [];
+        let wfSchema = null;
+        let editingStepIndex = -1;
+        let chartInstance = null;
+        let config = {};
+        let currentPage = 1;
+        let dataTablesInstances = {};
+
+        const rolePermissions = {
+            'admin': ['manage-users', 'manage-groups', 'manage-computers', 'manage-workflows', 'approve', 'view-reports', 'view-audit', 'manage-backups', 'import', 'manage-plugins'],
+            'helpdesk': ['view-users', 'reset-password', 'unlock-user', 'view-groups', 'view-computers', 'disable-computer', 'view-reports'],
+            'manager': ['approve', 'view-reports', 'view-workflows'],
+            'auditor': ['view-audit', 'view-reports'],
+            'user': []
+        };
+
+        function setPermissions(role) {
+            document.body.className = ''; // Reset
+            const perms = rolePermissions[role] || [];
+            perms.forEach(p => document.body.classList.add('perm-' + p));
+
+            // Helper classes for sidebar
+            if (perms.includes('manage-users') || perms.includes('view-users')) document.body.classList.add('show-users');
+            if (perms.includes('manage-groups') || perms.includes('view-groups')) document.body.classList.add('show-groups');
+            if (perms.includes('manage-computers') || perms.includes('view-computers')) document.body.classList.add('show-computers');
+            if (perms.includes('approve')) document.body.classList.add('show-tasks');
+            if (perms.includes('view-reports')) document.body.classList.add('show-reports');
+            if (perms.includes('manage-workflows') || perms.includes('view-workflows')) document.body.classList.add('show-workflows');
+            if (perms.includes('view-audit')) document.body.classList.add('show-logs');
+            if (perms.includes('manage-backups')) document.body.classList.add('show-backups');
+            if (perms.includes('import')) document.body.classList.add('show-bulk');
+            if (perms.includes('manage-plugins')) document.body.classList.add('show-plugins');
+        }
+
+        // --- INITIALIZATION ---
+
+        $(document).ready(function () {
+            if (token) {
+                $('#login-screen').hide();
+                initApp();
+            }
+
+            // Sidebar Toggle
+            window.toggleSidebar = function () {
+                $('#sidebar').toggleClass('collapsed');
+                $('#content').toggleClass('expanded');
+            };
+
+            // Login Handler
+            $('#login-form').on('submit', async function (e) {
+                e.preventDefault();
+                const user = $('#l-username').val();
+                const pass = $('#l-password').val();
+
+                if (!user || !pass) return;
+
+                try {
+                    showLoader(true);
+                    const formData = new URLSearchParams();
+                    formData.append('username', user);
+                    formData.append('password', pass);
+
+                    const res = await fetch(API_URL + "/token", {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: formData
+                    });
+
+                    if (!res.ok) throw new Error('Ошибка авторизации');
+
+                    const data = await res.json();
+                    token = data.access_token;
+                    userRole = data.role;
+                    localStorage.setItem('ad_token', token);
+                    localStorage.setItem('ad_role', userRole);
+
+                    $('#login-screen').fadeOut();
+                    initApp();
+                } catch (err) {
+                    alert('Неверный логин или пароль');
+                } finally {
+                    showLoader(false);
+                }
+            });
+
+            // Search Handler
+            let searchTimeout;
+            $('#global-search').on('input', function () {
+                clearTimeout(searchTimeout);
+                const q = $(this).val();
+                if (q.length < 2) { $('#global-search-results').hide(); return; }
+
+                searchTimeout = setTimeout(async () => {
+                    try {
+                        const res = await req(`/ad/search?q=${encodeURIComponent(q)}`);
+                        let html = '';
+                        if (res.results.length > 0) {
+                            html = res.results.map(r =>
+                                `<div class="search-item d-flex align-items-center" onclick="handleSearchResult('${r.type}', '${escapeStr(r.dn)}')">
+                            <div class="bg-light rounded-circle p-2 me-3"><i class="fas fa-${r.type === 'user' ? 'user' : 'users'}"></i></div>
+                            <div>
+                                <div class="fw-bold">${r.name}</div>
+                                <small class="text-muted">${r.info}</small>
+                            </div>
+                        </div>`
+                            ).join('');
+                        } else {
+                            html = '<div class="p-3 text-muted text-center">Ничего не найдено</div>';
+                        }
+                        $('#global-search-results').html(html).show();
+                    } catch (e) { console.error(e); }
+                }, 400);
+            });
+
+            // Hide search on click outside
+            $(document).click(function (e) {
+                if (!$(e.target).closest('.search-wrapper').length) {
+                    $('#global-search-results').hide();
+                }
+            });
+
+            // Select All Checkbox
+            $('#select-all-users').change(function () {
+                $('.user-check').prop('checked', this.checked);
+            });
+
+            // Keyboard shortcuts
+            $(document).keydown(function (e) {
+                if (e.ctrlKey && e.key === 'k') {
+                    e.preventDefault();
+                    $('#global-search').focus();
+                }
+            });
+        });
+
+        function showLoader(show) {
+            if (show) $('.loading-overlay').css('display', 'flex');
+            else $('.loading-overlay').hide();
+        }
+
+        async function req(endpoint, method = 'GET', data = null) {
+            const headers = { 'Authorization': `Bearer ${token}` };
+            if (data && !(data instanceof FormData)) headers['Content-Type'] = 'application/json';
+
+            const options = { method, headers };
+            if (data) options.body = (data instanceof FormData) ? data : JSON.stringify(data);
+
+            const res = await fetch(API_URL + endpoint, options);
+
+            if (res.status === 401) { logout(); return Promise.reject('Unauthorized'); }
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ detail: res.statusText }));
+                throw new Error(err.detail || 'Ошибка запроса');
+            }
+            return res.json();
+        }
+
+        function escapeStr(str) {
+            if (!str) return '';
+            return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+
+        function logout() {
+            localStorage.removeItem('ad_token');
+            location.reload();
+        }
+
+        async function initApp() {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                $('#user-display-name').text(payload.sub);
+                $('#user-display-role').text(userRole);
+
+                setPermissions(userRole);
+
+                config = await req('/config');
+                $('#domain-suffix').text('@' + config.domain.toLowerCase());
+
+                const tree = await req('/ad/tree');
+                const ouOpts = tree.tree.map(t => `<option value="${t.dn}">${t.name}</option>`).join('');
+                $('#filter-ou, #n-ou, #grp-ou').html(ouOpts);
+                $('#filter-ou').prepend('<option value="">Все подразделения</option>').val('');
+
+                loadDashboard();
+                showPage('dashboard');
+            } catch (e) {
+                console.error("Init failed", e);
+            }
+        }
+
+        function showPage(pageId) {
+            $('.nav-link').removeClass('active');
+            $(`.nav-link[onclick="showPage('${pageId}')"]`).addClass('active');
+            $('.page-section').addClass('d-none');
+            $(`#page-${pageId}`).removeClass('d-none');
+
+            const pageNames = {
+                'dashboard': 'Дашборд',
+                'profile': 'Мой профиль',
+                'directory': 'Справочник сотрудников',
+                'tasks': 'Задачи',
+                'users': 'Пользователи',
+                'groups': 'Группы',
+                'computers': 'Компьютеры',
+                'workflows': 'Workflows',
+                'bulk': 'Массовые операции',
+                'reports': 'Отчеты',
+                'logs': 'Журнал аудита',
+                'backup': 'Бэкапы',
+                'plugins': 'Плагины'
+            };
+            $('#page-title').text(pageNames[pageId] || pageId);
+
+            // Load specific page data
+            if (pageId === 'dashboard') loadDashboard();
+            if (pageId === 'profile') loadProfile();
+            if (pageId === 'directory') loadDirectory();
+            if (pageId === 'tasks') loadTasks();
+            if (pageId === 'users') loadUsers();
+            if (pageId === 'groups') loadGroups();
+            if (pageId === 'computers') loadComputers();
+            if (pageId === 'workflows') loadWorkflows();
+            if (pageId === 'logs') loadLogs();
+            if (pageId === 'backup') loadBackups();
+            if (pageId === 'plugins') loadPlugins();
+        }
+
+        function refreshAll() {
+            const activePage = $('.page-section:not(.d-none)').attr('id').replace('page-', '');
+            showPage(activePage);
+            toast('Данные обновлены', 'bg-info');
+        }
+
+        function toast(msg, type = 'bg-primary') {
+            const id = Date.now();
+            const html = `
+        <div id="t-${id}" class="toast align-items-center text-white ${type} border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">${msg}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>`;
+            $('#toast-container').append(html);
+            setTimeout(() => $(`#t-${id}`).remove(), 4000);
+        }
+
+        // --- DASHBOARD FUNCTIONS ---
+
+        async function loadDashboard() {
+            // Set Date
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            $('#current-date').text(new Date().toLocaleDateString('ru-RU', options));
+
+            // Load all widgets in parallel
+            Promise.all([
+                loadDomainHealth(),
+                loadSecurityStats(),
+                loadOperationsStats(),
+                loadRecentLogs()
+            ]);
+        }
+
+        async function loadDomainHealth() {
+            try {
+                const res = await req('/health/domain');
+                const badge = $('#domain-health-badge');
+
+                if (res.status === 'HEALTHY') {
+                    badge.removeClass('health-warn health-crit').addClass('health-ok');
+                    badge.html('<i class="fas fa-check-circle"></i> Система в норме');
+                } else {
+                    badge.removeClass('health-ok').addClass('health-crit');
+                    badge.html('<i class="fas fa-exclamation-circle"></i> Проблемы');
+                }
+
+                // Update DC list
+                if (res.controllers) {
+                    $('#dc-status-list').html(res.controllers.map(dc => `
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-server text-secondary me-2"></i>
+                                <strong>${dc.name}</strong>
+                            </div>
+                            <span class="badge ${dc.status === 'ONLINE' ? 'bg-success' : 'bg-danger'}">${dc.status} (${dc.latency})</span>
+                        </li>
+                    `).join(''));
+                }
+            } catch (e) {
+                console.error("Health check failed", e);
+            }
+        }
+
+        async function loadSecurityStats() {
+            try {
+                const s = await req('/stats/security');
+                const total = await req('/stats'); // Legacy endpoint for total users
+
+                $('#kpi-users-total').text(total.ad_metrics.total_users);
+                $('#kpi-users-active').text(total.ad_metrics.total_users - s.locked_users); // Approx
+                $('#kpi-users-locked').text(s.locked_users);
+                $('#kpi-login-fails').text(s.failed_logins_24h);
+
+                // Approvals (mock for now or fetch real)
+                const approvals = await req('/approvals/pending').catch(() => []);
+                $('#kpi-approvals').text(approvals.length);
+            } catch (e) {
+                console.error("Stats failed", e);
+            }
+        }
+
+        let opsChartInstance = null;
+        async function loadOperationsStats() {
+            try {
+                const data = await req('/stats/operations');
+
+                const ctx = document.getElementById('opsChart').getContext('2d');
+                if (opsChartInstance) opsChartInstance.destroy();
+
+                opsChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.dates.map(d => d.split('-').slice(1).join('.')), // MM.DD
+                        datasets: [
+                            {
+                                label: 'Создано',
+                                data: data.created,
+                                backgroundColor: '#10b981',
+                                borderRadius: 4
+                            },
+                            {
+                                label: 'Удалено',
+                                data: data.deleted,
+                                backgroundColor: '#ef4444',
+                                borderRadius: 4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, grid: { display: false } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error("Chart failed", e);
+            }
+        }
+
+        async function loadRecentLogs() {
+            try {
+                const logs = await req('/audit-logs?limit=5');
+                $('#recent-logs-feed').html(logs.map(l => `
+                    <div class="d-flex align-items-center gap-3 p-2 border-bottom">
+                        <div class="bg-light p-2 rounded"><i class="fas fa-bolt text-secondary"></i></div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold small">${l.action}</div>
+                            <div class="text-muted small text-truncate" style="max-width: 200px;">${l.target}</div>
+                        </div>
+                        <div class="text-end">
+                            <small class="text-muted d-block">${new Date(l.date).toLocaleTimeString()}</small>
+                            <span class="badge ${l.status === 'SUCCESS' ? 'bg-success' : 'bg-danger'} py-1" style="font-size: 0.6rem;">${l.status}</span>
+                        </div>
+                    </div>
+                `).join(''));
+            } catch (e) {
+                console.error("Logs failed", e);
+            }
+        }
+
+        // --- USERS FUNCTIONS ---
+
+        async function loadUsers(page = 1) {
+            currentPage = page;
+            const ou = $('#filter-ou').val();
+            const stat = $('#filter-status').val();
+
+            showLoader(true);
+            try {
+                const res = await req(`/ad/users?page=${page}&ou=${encodeURIComponent(ou)}&filter_type=${stat}`);
+
+                $('#users-list').html(res.users.map(u => `
+            <tr>
+                <td><input type="checkbox" class="form-check-input user-check" value="${escapeStr(u.dn)}"></td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <div class="user-avatar">${u.displayName.charAt(0)}</div>
+                        <div>
+                            <div class="fw-bold">${u.displayName}</div>
+                            <small class="text-muted">${u.title || ''}</small>
+                        </div>
+                    </div>
+                </td>
+                                <td><code>${u.login}</code></td>
+                <td>${u.mail}</td>
+                <td>${u.department}</td>
+                <td><span class="status-badge ${u.disabled ? 'status-disabled' : 'status-active'}">${u.disabled ? 'Отключен' : 'Активен'}</span></td>
+                <td class="text-end">
+                    <div class="dropdown">
+                        <button class="btn btn-light btn-sm border" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" onclick="editUser('${escapeStr(u.dn)}')"><i class="fas fa-pen me-2"></i>Редактировать</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteUsr('${escapeStr(u.dn)}')"><i class="fas fa-trash me-2"></i>Удалить</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+        `).join(''));
+
+                $('#users-info').text(`Страница ${res.page} из ${res.total_pages} (Всего: ${res.total})`);
+                renderPagination(res.page, res.total_pages);
+            } catch (e) {
+                toast('Ошибка загрузки пользователей: ' + e.message, 'bg-danger');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        function renderPagination(curr, total) {
+            let html = '';
+            if (curr > 1) html += `<li class="page-item"><a class="page-link" href="#" onclick="loadUsers(${curr - 1}); return false;">&laquo;</a></li>`;
+
+            for (let i = Math.max(1, curr - 2); i <= Math.min(total, curr + 2); i++) {
+                html += `<li class="page-item ${i === curr ? 'active' : ''}"><a class="page-link" href="#" onclick="loadUsers(${i}); return false;">${i}</a></li>`;
+            }
+
+            if (curr < total) html += `<li class="page-item"><a class="page-link" href="#" onclick="loadUsers(${curr + 1}); return false;">&raquo;</a></li>`;
+            $('#users-pagination').html(html);
+        }
+
+        // --- USER MODAL LOGIC ---
+
+        async function openCreateUser() {
+            editingUserDN = null;
+            $('#user-form')[0].reset();
+            $('#user-modal .modal-title').text('Создание нового пользователя');
+
+            // Reset tabs
+            $('#u-tab-gen').addClass('show active');
+            $('#u-tab-grp, #u-tab-danger').removeClass('show active');
+            $('.nav-pills .nav-link').removeClass('active');
+            $('a[href="#u-tab-gen"]').addClass('active');
+
+            // Disable management tabs for new users
+            $('a[href="#u-tab-grp"], a[href="#u-tab-danger"]').addClass('disabled').attr('tabindex', '-1');
+
+            $('#user-modal').modal('show');
+        }
+
+        async function editUser(dn) {
+            editingUserDN = dn;
+            $('#user-modal .modal-title').text('Редактирование пользователя');
+
+            // Enable tabs
+            $('a[href="#u-tab-grp"], a[href="#u-tab-danger"]').removeClass('disabled').removeAttr('tabindex');
+
+            $('#user-form')[0].reset();
+            $('#user-groups-list').html('<div class="text-center"><div class="spinner-border spinner-border-sm text-primary"></div></div>');
+
+            $('#user-modal').modal('show');
+
+            try {
+                const u = await req(`/ad/users/${encodeURIComponent(dn)}`);
+
+                $('#user-form input[name="givenName"]').val(u.givenName);
+                $('#user-form input[name="sn"]').val(u.sn);
+                $('#user-form input[name="sAMAccountName"]').val(u.sAMAccountName);
+                $('#user-form input[name="title"]').val(u.title);
+                $('#user-form input[name="department"]').val(u.department);
+                $('#user-form input[name="mail"]').val(u.mail);
+                $('#user-form input[name="enabled"]').prop('checked', u.enabled);
+
+                const parts = u.dn.split(',');
+                parts.shift();
+                const ouDn = parts.join(',');
+
+                if ($(`#n-ou option[value="${ouDn}"]`).length === 0) {
+                    $('#n-ou').append(new Option(ouDn, ouDn));
+                }
+                $('#n-ou').val(ouDn);
+
+                loadUserGroups(dn);
+
+            } catch (e) {
+                console.error(e);
+                toast('Не удалось загрузить данные пользователя', 'bg-danger');
+                $('#user-modal').modal('hide');
+            }
+        }
+
+        async function saveUser() {
+            const form = document.getElementById('user-form');
+            if (!form.checkValidity()) { form.reportValidity(); return; }
+
+            const data = Object.fromEntries(new FormData(form));
+            data.enabled = $('#user-form input[name="enabled"]').is(':checked');
+
+            showLoader(true);
+            try {
+                if (editingUserDN) {
+                    const updateItem = {
+                        identifier: editingUserDN,
+                        fields: {
+                            givenName: data.givenName,
+                            sn: data.sn,
+                            title: data.title,
+                            department: data.department,
+                            mail: data.mail
+                        }
+                    };
+
+                    await req('/mass-update-exec/', 'POST', [updateItem]);
+                    toast('Пользователь обновлен');
+                } else {
+                    await req('/ad/users/create', 'POST', data);
+                    toast('Пользователь успешно создан');
+                }
+                $('#user-modal').modal('hide');
+                loadUsers(currentPage);
+            } catch (e) {
+                toast('Ошибка сохранения: ' + e.message, 'bg-danger');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        // --- GROUP OPERATIONS ---
+
+        async function loadUserGroups(dn) {
+            try {
+                const res = await req(`/ad/users/${encodeURIComponent(dn)}/groups`);
+                if (res.groups.length === 0) {
+                    $('#user-groups-list').html('<li class="list-group-item text-center text-muted">Нет групп</li>');
+                    return;
+                }
+                $('#user-groups-list').html(res.groups.map(g => `
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-users text-secondary"></i>
+                    <span>${g.name}</span>
+                </div>
+                <button class="btn btn-sm btn-outline-danger border-0" onclick="removeGrp('${escapeStr(g.dn)}')"><i class="fas fa-times"></i></button>
+            </li>
+        `).join(''));
+            } catch (e) {
+                $('#user-groups-list').html('<li class="list-group-item text-danger">Ошибка загрузки групп</li>');
+            }
+        }
+
+        async function addUserToGroup() {
+            if (!editingUserDN) return;
+            const grpName = $('#grp-search-input').val();
+            if (!grpName) return;
+
+            toast('Поиск группы...', 'bg-info');
+            try {
+                const search = await req(`/ad/search?q=${encodeURIComponent(grpName)}`);
+                const group = search.results.find(r => r.type === 'group');
+
+                if (group) {
+                    await req(`/ad/users/${encodeURIComponent(editingUserDN)}/groups`, 'POST', {
+                        add: [group.dn],
+                        remove: []
+                    });
+                    toast(`Добавлен в группу ${group.name}`);
+                    $('#grp-search-input').val('');
+                    loadUserGroups(editingUserDN);
+                } else {
+                    toast('Группа не найдена', 'bg-warning');
+                }
+            } catch (e) { toast(e.message, 'bg-danger'); }
+        }
+
+        async function removeGrp(groupDn) {
+            if (!confirm('Удалить пользователя из этой группы?')) return;
+            try {
+                await req(`/ad/users/${encodeURIComponent(editingUserDN)}/groups`, 'POST', {
+                    add: [],
+                    remove: [groupDn]
+                });
+                loadUserGroups(editingUserDN);
+                toast('Удален из группы');
+            } catch (e) { toast(e.message, 'bg-danger'); }
+        }
+
+        // --- USER ACTIONS (DANGER ZONE) ---
+
+        async function resetPwd() {
+            const newPwd = prompt('Введите новый пароль:');
+            if (!newPwd) return;
+            try {
+                await req(`/ad/users/${encodeURIComponent(editingUserDN)}/reset-password`, 'POST', { new_password: newPwd });
+                toast('Пароль успешно сброшен');
+            } catch (e) { toast(e.message, 'bg-danger'); }
+        }
+
+        async function unlockUsr() {
+            try {
+                await req(`/ad/users/${encodeURIComponent(editingUserDN)}/unlock`, 'POST');
+                toast('Аккаунт разблокирован');
+            } catch (e) { toast(e.message, 'bg-danger'); }
+        }
+
+        async function deleteUsr(dn) {
+            const dnToDelete = dn || editingUserDN;
+            if (!dnToDelete) return;
+
+            if (!confirm('ВЫ УВЕРЕНЫ? Пользователь будет удален безвозвратно!')) return;
+            try {
+                await req(`/ad/users/${encodeURIComponent(dnToDelete)}`, 'DELETE');
+                toast('Пользователь удален');
+                if ($('#user-modal').hasClass('show')) {
+                    $('#user-modal').modal('hide');
+                }
+                loadUsers(currentPage);
+            } catch (e) { toast(e.message, 'bg-danger'); }
+        }
+
+        // --- GROUP MANAGEMENT ---
+
+        async function loadGroups() {
+            showLoader(true);
+            try {
+                if (dataTablesInstances['groups-table']) {
+                    dataTablesInstances['groups-table'].destroy();
+                }
+
+                const res = await req('/ad/groups');
+                $('#groups-list').html(res.groups.map(g => `
+            <tr>
+                <td class="fw-bold text-primary">${g.name}</td>
+                <td><span class="badge bg-secondary rounded-pill">${g.members}</span></td>
+                <td>${g.description}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteGroup('${escapeStr(g.dn)}')"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+        `).join(''));
+
+                dataTablesInstances['groups-table'] = $('#groups-table').DataTable({
+                    language: { url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/ru.json" },
+                    order: [[0, 'asc']]
+                });
+            } catch (e) {
+                toast('Ошибка загрузки групп', 'bg-danger');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        // --- REPORT BUILDER ---
+        let rbSchema = null;
+        let rbFilters = [];
+        let rbTemplates = [];
+
+        async function openReportBuilder() {
+            if (!rbSchema) {
+                try {
+                    rbSchema = await req('/reports/schema');
+                    rbTemplates = await req('/reports/templates');
+                } catch (e) {
+                    return toast('Ошибка загрузки схемы отчетов', 'bg-danger');
+                }
+            }
+
+            // Render Templates
+            const tplList = $('#rb-templates-list');
+            tplList.empty();
+            rbTemplates.forEach(t => {
+                tplList.append(`
+                    <button class="list-group-item list-group-item-action py-2" onclick="applyReportTemplate('${t.id}')">
+                        <div class="fw-bold">${t.name}</div>
+                        <div class="text-muted" style="font-size: 0.75rem;">${t.description}</div>
+                    </button>
+                `);
+            });
+
+            // Render Attributes
+            const attrList = $('#rb-attributes-list');
+            attrList.empty();
+            rbSchema.attributes.forEach(attr => {
+                attrList.append(`
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="${attr.name}" id="attr-${attr.name}" ${['cn', 'mail'].includes(attr.name) ? 'checked' : ''}>
+                        <label class="form-check-label" for="attr-${attr.name}">${attr.label}</label>
+                    </div>
+                `);
+            });
+
+            // Reset Filters
+            rbFilters = [];
+            renderReportFilters();
+            $('#rb-preview-area').addClass('d-none');
+
+            $('#report-builder-modal').modal('show');
+        }
+
+        function applyReportTemplate(id) {
+            const tpl = rbTemplates.find(t => t.id === id);
+            if (!tpl) return;
+
+            // Set Attributes
+            $('#rb-attributes-list input').prop('checked', false);
+            tpl.attributes.forEach(attr => {
+                $(`#attr-${attr}`).prop('checked', true);
+            });
+
+            // Set Filters
+            rbFilters = JSON.parse(JSON.stringify(tpl.filters)); // Deep copy
+            renderReportFilters();
+
+            toast(`Применен шаблон: ${tpl.name}`);
+        }
+
+        function renderReportFilters() {
+            const container = $('#rb-filters-container');
+            container.empty();
+
+            rbFilters.forEach((f, idx) => {
+                const fieldsOpts = rbSchema.attributes.map(a => `<option value="${a.name}" ${a.name === f.field ? 'selected' : ''}>${a.label}</option>`).join('');
+                const opsOpts = rbSchema.operators.map(o => `<option value="${o.name}" ${o.name === f.operator ? 'selected' : ''}>${o.label}</option>`).join('');
+
+                container.append(`
+                    <div class="d-flex gap-2 align-items-center">
+                        <select class="form-select form-select-sm" onchange="updateFilter(${idx}, 'field', this.value)">${fieldsOpts}</select>
+                        <select class="form-select form-select-sm" onchange="updateFilter(${idx}, 'operator', this.value)">${opsOpts}</select>
+                        <input type="text" class="form-control form-control-sm" value="${f.value}" onchange="updateFilter(${idx}, 'value', this.value)" placeholder="Значение">
+                        <button class="btn btn-sm btn-light text-danger" onclick="removeReportFilter(${idx})"><i class="fas fa-times"></i></button>
+                    </div>
+                `);
+            });
+        }
+
+        function addReportFilter() {
+            rbFilters.push({ field: 'cn', operator: 'equals', value: '' });
+            renderReportFilters();
+        }
+
+        function removeReportFilter(idx) {
+            rbFilters.splice(idx, 1);
+            renderReportFilters();
+        }
+
+        function updateFilter(idx, key, val) {
+            rbFilters[idx][key] = val;
+        }
+
+        async function generateReportPreview() {
+            const attributes = $('#rb-attributes-list input:checked').map((i, el) => el.value).get();
+            if (attributes.length === 0) return toast('Выберите хотя бы один атрибут', 'bg-warning');
+
+            showLoader(true);
+            try {
+                const res = await req('/reports/generate', 'POST', { attributes, filters: rbFilters });
+
+                // Render Table
+                const thead = $('#rb-preview-table thead');
+                const tbody = $('#rb-preview-table tbody');
+                thead.empty();
+                tbody.empty();
+
+                if (res.data.length === 0) {
+                    tbody.html('<tr><td class="text-center text-muted">Ничего не найдено</td></tr>');
+                } else {
+                    const cols = Object.keys(res.data[0]);
+                    thead.html('<tr>' + cols.map(c => `<th>${c}</th>`).join('') + '</tr>');
+                    tbody.html(res.data.map(row =>
+                        '<tr>' + cols.map(c => `<td>${row[c] || ''}</td>`).join('') + '</tr>'
+                    ).join(''));
+                }
+
+                $('#rb-preview-area').removeClass('d-none');
+            } catch (e) {
+                toast(e.message, 'bg-danger');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        function exportReportCSV() {
+            const attributes = $('#rb-attributes-list input:checked').map((i, el) => el.value).get();
+            const payload = JSON.stringify({ attributes, filters: rbFilters });
+            toast('Экспорт пока не реализован через POST, используйте превью', 'bg-warning');
+        }
+        let rbTemplates = [];
+
+        async function openReportBuilder() {
+            if (!rbSchema) {
+                try {
+                    rbSchema = await req('/reports/schema');
+                    rbTemplates = await req('/reports/templates');
+                } catch (e) {
+                    return toast('Ошибка загрузки схемы отчетов', 'bg-danger');
+                }
+            }
+
+            // Render Templates
+            const tplList = $('#rb-templates-list');
+            tplList.empty();
+            rbTemplates.forEach(t => {
+                tplList.append(`
+                    <button class="list-group-item list-group-item-action py-2" onclick="applyReportTemplate('${t.id}')">
+                        <div class="fw-bold">${t.name}</div>
+                        <div class="text-muted" style="font-size: 0.75rem;">${t.description}</div>
+                    </button>
+                `);
+            });
+
+            // Render Attributes
+            const attrList = $('#rb-attributes-list');
+            attrList.empty();
+            rbSchema.attributes.forEach(attr => {
+                attrList.append(`
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="${attr.name}" id="attr-${attr.name}" ${['cn', 'mail'].includes(attr.name) ? 'checked' : ''}>
+                        <label class="form-check-label" for="attr-${attr.name}">${attr.label}</label>
+                    </div>
+                `);
+            });
+
+            // Reset Filters
+            rbFilters = [];
+            renderReportFilters();
+            $('#rb-preview-area').addClass('d-none');
+
+            $('#report-builder-modal').modal('show');
+        }
+
+        function applyReportTemplate(id) {
+            const tpl = rbTemplates.find(t => t.id === id);
+            if (!tpl) return;
+
+            // Set Attributes
+            $('#rb-attributes-list input').prop('checked', false);
+            tpl.attributes.forEach(attr => {
+                $(`#attr-${attr}`).prop('checked', true);
+            });
+
+            // Set Filters
+            rbFilters = JSON.parse(JSON.stringify(tpl.filters)); // Deep copy
+            renderReportFilters();
+
+            toast(`Применен шаблон: ${tpl.name}`);
+        }
+
+        function renderReportFilters() {
+            const container = $('#rb-filters-container');
+            container.empty();
+
+            rbFilters.forEach((f, idx) => {
+                const fieldsOpts = rbSchema.attributes.map(a => `<option value="${a.name}" ${a.name === f.field ? 'selected' : ''}>${a.label}</option>`).join('');
+                const opsOpts = rbSchema.operators.map(o => `<option value="${o.name}" ${o.name === f.operator ? 'selected' : ''}>${o.label}</option>`).join('');
+
+                container.append(`
+                    <div class="d-flex gap-2 align-items-center">
+                        <select class="form-select form-select-sm" onchange="updateFilter(${idx}, 'field', this.value)">${fieldsOpts}</select>
+                        <select class="form-select form-select-sm" onchange="updateFilter(${idx}, 'operator', this.value)">${opsOpts}</select>
+                        <input type="text" class="form-control form-control-sm" value="${f.value}" onchange="updateFilter(${idx}, 'value', this.value)" placeholder="Значение">
+                        <button class="btn btn-sm btn-light text-danger" onclick="removeReportFilter(${idx})"><i class="fas fa-times"></i></button>
+                    </div>
+                `);
+            });
+        }
+
+        function addReportFilter() {
+            rbFilters.push({ field: 'cn', operator: 'equals', value: '' });
+            renderReportFilters();
+        }
+
+        function removeReportFilter(idx) {
+            rbFilters.splice(idx, 1);
+            renderReportFilters();
+        }
+
+        function updateFilter(idx, key, val) {
+            rbFilters[idx][key] = val;
+        }
+
+        async function generateReportPreview() {
+            const attributes = $('#rb-attributes-list input:checked').map((i, el) => el.value).get();
+            if (attributes.length === 0) return toast('Выберите хотя бы один атрибут', 'bg-warning');
+
+            showLoader(true);
+            try {
+                const res = await req('/reports/generate', 'POST', { attributes, filters: rbFilters });
+
+                // Render Table
+                const thead = $('#rb-preview-table thead');
+                const tbody = $('#rb-preview-table tbody');
+                thead.empty();
+                tbody.empty();
+
+                if (res.data.length === 0) {
+                    tbody.html('<tr><td class="text-center text-muted">Ничего не найдено</td></tr>');
+                } else {
+                    const cols = Object.keys(res.data[0]);
+                    thead.html('<tr>' + cols.map(c => `<th>${c}</th>`).join('') + '</tr>');
+                    tbody.html(res.data.map(row =>
+                        '<tr>' + cols.map(c => `<td>${row[c] || ''}</td>`).join('') + '</tr>'
+                    ).join(''));
+                }
+
+                $('#rb-preview-area').removeClass('d-none');
+            } catch (e) {
+                toast(e.message, 'bg-danger');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        function exportReportCSV() {
+            const attributes = $('#rb-attributes-list input:checked').map((i, el) => el.value).get();
+            const payload = JSON.stringify({ attributes, filters: rbFilters });
+            // Use a hidden form or just window.open with query params if GET, but this is POST
+            // For simplicity, we'll trigger a download via fetch blob
+            toast('Экспорт пока не реализован через POST, используйте превью', 'bg-warning');
+        }
+
+        function openGroupModal() {
+            $('#group-form')[0].reset();
+            $('#group-modal').modal('show');
+        }
+
+        async function saveGroup() {
+            const name = $('#grp-name').val();
+            const ou = $('#grp-ou').val();
+            const desc = $('#grp-desc').val();
+
+            if (!name || !ou) return alert('Заполните обязательные поля');
+
+            showLoader(true);
+            try {
+                await req('/ad/groups/create', 'POST', { name, ou, description: desc, groupType: 'security' });
+                $('#group-modal').modal('hide');
+                toast('Группа создана');
+                loadGroups();
+            } catch (e) {
+                toast(e.message, 'bg-danger');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        async function deleteGroup(dn) {
+            if (!confirm('Удалить группу?')) return;
+            try {
+                await req(`/ad/groups/${encodeURIComponent(dn)}`, 'DELETE');
+                toast('Группа удалена');
+                loadGroups();
+            } catch (e) {
+                toast(e.message, 'bg-danger');
+            }
+        }
+
+        // --- WORKFLOWS ---
+
+        async function loadWorkflows() {
+            showLoader(true);
+            try {
+                if (dataTablesInstances['workflows-table']) {
+                    dataTablesInstances['workflows-table'].destroy();
+                }
+
+                const workflows = await req('/workflows');
+                $('#workflows-list').html(workflows.map(w => `
+            <tr>
+                <td><code>${w.id}</code></td>
+                <td class="fw-bold">${w.name}</td>
+                <td><span class="badge bg-info">${w.trigger}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-primary me-2" onclick="editWorkflow('${w.id}')"><i class="fas fa-pen"></i></button>
+                    <button class="btn btn-sm btn-success" onclick="execWorkflow('${w.id}')"><i class="fas fa-play"></i></button>
+                </td>
+            </tr>
+        `).join(''));
+
+                dataTablesInstances['workflows-table'] = $('#workflows-table').DataTable({
+                    language: { url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/ru.json" }
+                });
+            } catch (e) {
+                toast('Ошибка загрузки Workflows', 'bg-danger');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+
+
+        async function loadWorkflowSchema() {
+            if (wfSchema) return;
+            try {
+                wfSchema = await req('/workflows/schema');
+            } catch (e) {
+                console.error("Schema load failed", e);
+            }
+        }
+
+        async function openWorkflowModal(id = null) {
+            await loadWorkflowSchema();
+            editingWFId = id;
+
+            if (id) {
+                try {
+                    const wf = await req(`/workflows/${id}`);
+                    $('#wf-id').val(wf.id).prop('disabled', true);
+                    $('#wf-name').val(wf.name);
+                    $('#wf-trigger').val(wf.trigger);
+                    currentSteps = wf.steps || [];
+                    $('#wf-json-editor').val(JSON.stringify(currentSteps, null, 2));
+                } catch (e) {
+                    toast('Ошибка загрузки', 'bg-danger');
+                    return;
+                }
+            } else {
+                $('#wf-id').val('').prop('disabled', false);
+                $('#wf-name').val('');
+                $('#wf-trigger').val('manual');
+                currentSteps = [];
+                $('#wf-json-editor').val('[]');
+            }
+
+            renderWorkflowSteps();
+            $('#wf-modal').modal('show');
+        }
+
+        // Alias for backward compatibility if needed, but we use openWorkflowModal(id) now
+        function editWorkflow(id) {
+            openWorkflowModal(id);
+        }
+
+        function renderWorkflowSteps() {
+            const container = $('#wf-steps-container');
+            container.empty();
+
+            if (currentSteps.length === 0) {
+                container.html('<div class="text-center text-muted py-4 border rounded bg-light">Нет шагов. Добавьте первый шаг.</div>');
+                return;
+            }
+
+            currentSteps.forEach((step, index) => {
+                const schema = wfSchema[step.type] || { label: step.type, icon: 'fa-cog' };
+                const html = `
+                    <div class="card border shadow-sm">
+                        <div class="card-body p-3 d-flex align-items-center gap-3">
+                            <div class="bg-light p-2 rounded text-primary">
+                                <i class="fas ${schema.icon}"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold">${schema.label}</div>
+                                <div class="small text-muted text-truncate" style="max-width: 300px;">
+                                    ${getStepSummary(step)}
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-light border" onclick="editStep(${index})"><i class="fas fa-pen"></i></button>
+                                <button class="btn btn-sm btn-light border text-danger" onclick="deleteStep(${index})"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.append(html);
+            });
+
+            // Sync JSON editor
+            $('#wf-json-editor').val(JSON.stringify(currentSteps, null, 2));
+        }
+
+        function getStepSummary(step) {
+            if (step.type === 'email') return `To: ${step.to}, Subj: ${step.subject}`;
+            if (step.type === 'add_to_group') return `Group: ${step.group_dn}`;
+            if (step.type === 'webhook') return `${step.method} ${step.url}`;
+            if (step.type === 'wait_for_approval') return `Approver: ${step.approver}`;
+            return JSON.stringify(step);
+        }
+
+        function openStepTypeSelector() {
+            const list = $('#step-type-list');
+            list.empty();
+
+            for (const [type, schema] of Object.entries(wfSchema)) {
+                list.append(`
+                    <button class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3" onclick="addStep('${type}')">
+                        <div class="bg-light p-2 rounded text-primary"><i class="fas ${schema.icon} fa-lg"></i></div>
+                        <div>
+                            <div class="fw-bold">${schema.label}</div>
+                        </div>
+                    </button>
+                `);
+            }
+            $('#step-type-modal').modal('show');
+        }
+
+        function addStep(type) {
+            $('#step-type-modal').modal('hide');
+            const newStep = { type };
+            // Pre-fill fields
+            if (wfSchema[type].fields) {
+                wfSchema[type].fields.forEach(f => newStep[f.name] = '');
+            }
+
+            currentSteps.push(newStep);
+            editStep(currentSteps.length - 1);
+        }
+
+        function editStep(index) {
+            editingStepIndex = index;
+            const step = currentSteps[index];
+            const schema = wfSchema[step.type];
+            const form = $('#step-editor-form');
+            form.empty();
+
+            $('#step-editor-title').text(`Настройка: ${schema.label}`);
+
+            schema.fields.forEach(f => {
+                let input = '';
+                const val = escapeStr(step[f.name] || '');
+
+                if (f.type === 'textarea') {
+                    input = `<textarea class="form-control" name="${f.name}" rows="3">${val}</textarea>`;
+                } else if (f.type === 'select') {
+                    const opts = f.options.map(o => `<option value="${o}" ${o === val ? 'selected' : ''}>${o}</option>`).join('');
+                    input = `<select class="form-select" name="${f.name}">${opts}</select>`;
+                } else {
+                    input = `<input type="${f.type}" class="form-control" name="${f.name}" value="${val}" placeholder="${f.placeholder || ''}">`;
+                }
+
+                form.append(`
+                    <div class="mb-3">
+                        <label class="form-label">${f.label}</label>
+                        ${input}
+                    </div>
+                `);
+            });
+
+            $('#step-editor-modal').modal('show');
+        }
+
+        function applyStepChanges() {
+            const formData = new FormData(document.getElementById('step-editor-form'));
+            const step = currentSteps[editingStepIndex];
+
+            for (const [key, value] of formData.entries()) {
+                step[key] = value;
+            }
+
+            renderWorkflowSteps();
+            $('#step-editor-modal').modal('hide');
+        }
+
+        function deleteStep(index) {
+            if (!confirm('Удалить шаг?')) return;
+            currentSteps.splice(index, 1);
+            renderWorkflowSteps();
+        }
+
+        async function saveWorkflow() {
+            const id = $('#wf-id').val();
+            const name = $('#wf-name').val();
+            const trigger = $('#wf-trigger').val();
+
+            if (!id || !name) return alert('Заполните поля');
+
+            const payload = { id, name, trigger, steps: currentSteps };
+
+            try {
+                if (editingWFId) await req(`/workflows/${editingWFId}`, 'PUT', payload);
+                else await req('/workflows', 'POST', payload);
+
+                $('#wf-modal').modal('hide');
+                toast('Workflow сохранен');
+                loadWorkflows();
+            } catch (e) {
+                toast(e.message, 'bg-danger');
+            }
+        }
+
+        async function deleteWorkflow() {
+            if (!editingWFId || !confirm('Удалить Workflow?')) return;
+            try {
+                await req(`/workflows/${editingWFId}`, 'DELETE');
+                $('#wf-modal').modal('hide');
+                toast('Workflow удален');
+                loadWorkflows();
+            } catch (e) {
+                toast(e.message, 'bg-danger');
+            }
+        }
+
+        async function execWorkflow(wid) {
+            try {
+                await req(`/workflows/${wid}/execute`, 'POST', {});
+                toast('Workflow запущен');
+            } catch (e) {
+                toast(e.message, 'bg-danger');
+            }
+        }
+
+        // --- COMPUTERS ---
+
+        async function loadComputers(q = '') {
+            showLoader(true);
+            try {
+                if (dataTablesInstances['computers-table']) {
+                    dataTablesInstances['computers-table'].destroy();
+                }
+
+                const res = await req(`/ad/computers?query=${encodeURIComponent(q)}`);
+                $('#computers-list').html(res.computers.map(c => `
+            <tr>
+                <td class="fw-bold"><i class="fas fa-desktop text-muted me-2"></i>${c.name}</td>
+                <td>${c.dns_name || '-'}</td>
+                <td>${c.os}</td>
+                <td>${c.lastLogon}</td>
+                <td>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-light border" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item text-danger" href="#" onclick="disableComp('${escapeStr(c.dn)}')"><i class="fas fa-power-off me-2"></i>Отключить</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+        `).join(''));
+
+                dataTablesInstances['computers-table'] = $('#computers-table').DataTable({
+                    language: { url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/ru.json" },
+                    order: [[0, 'asc']]
+                });
+            } catch (e) {
+                toast('Ошибка загрузки компьютеров', 'bg-danger');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        async function disableComp(dn) {
+            if (!confirm('Отключить этот компьютер?')) return;
+            try {
+                await req(`/ad/computers/${encodeURIComponent(dn)}/disable`, 'POST');
+                toast('Компьютер отключен');
+                loadComputers();
+            } catch (e) {
+                toast(e.message, 'bg-danger');
+            }
+        }
+
+        // --- LOGS, BACKUPS, PLUGINS ---
+
+        function formatLogDetails(details) {
+            if (!details) return '';
+            try {
+                // Если это строка, пробуем распарсить
+                let obj = typeof details === 'string' ? JSON.parse(details) : details;
+
+                // Проверяем, является ли это Diff структурой (ключи с old/new)
+                let isDiff = false;
+                let html = '<div class="d-flex flex-column gap-1" style="font-size: 0.85rem;">';
+
+                for (const [key, val] of Object.entries(obj)) {
+                    if (val && typeof val === 'object' && 'old' in val && 'new' in val) {
+                        isDiff = true;
+                        html += `
+                            <div>
+                                <span class="fw-bold text-muted">${key}:</span> 
+                                <span class="text-decoration-line-through text-danger me-1">${escapeStr(val.old)}</span>
+                                <i class="fas fa-arrow-right text-muted small mx-1"></i>
+                                <span class="text-success fw-bold">${escapeStr(val.new)}</span>
+                            </div>
+                        `;
+                    } else {
+                        // Обычное значение
+                        html += `<div><span class="fw-bold text-muted">${key}:</span> ${escapeStr(JSON.stringify(val))}</div>`;
+                    }
+                }
+                html += '</div>';
+
+                if (isDiff || Object.keys(obj).length > 0) return html;
+                return escapeStr(JSON.stringify(obj));
+            } catch (e) {
+                return `<small class="text-muted">${escapeStr(details)}</small>`;
+            }
+        }
+
+        async function loadLogs() {
+            showLoader(true);
+            try {
+                if (dataTablesInstances['logs-table']) {
+                    dataTablesInstances['logs-table'].destroy();
+                }
+
+                const logs = await req('/audit-logs?limit=200');
+                $('#audit-list').html(logs.map(l => `
+            <tr>
+                <td>${new Date(l.date).toLocaleString()}</td>
+                <td><div class="d-flex align-items-center gap-2"><i class="fas fa-user-shield text-secondary"></i> ${l.user}</div></td>
+                <td class="fw-bold">${l.action}</td>
+                <td class="text-muted text-truncate" style="max-width: 200px;" title="${l.target}">${l.target}</td>
+                <td>${formatLogDetails(l.details)}</td>
+                <td><span class="badge ${l.status === 'SUCCESS' ? 'bg-success' : 'bg-danger'}">${l.status}</span></td>
+            </tr>
+        `).join(''));
+
+                dataTablesInstances['logs-table'] = $('#logs-table').DataTable({
+                    language: { url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/ru.json" },
+                    order: [[0, 'desc']]
+                });
+            } catch (e) {
+                toast('Ошибка загрузки логов', 'bg-danger');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        async function loadBackups() {
+            showLoader(true);
+            try {
+                const files = await req('/backups');
+                $('#backup-list').html(files.map(f => `
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-file-archive text-warning me-2"></i>
+                    ${f}
+                </div>
+                <button class="btn btn-sm btn-outline-dark fw-bold" onclick="rollback('${f}')"><i class="fas fa-undo me-1"></i> Откатить</button>
+            </li>
+        `).join(''));
+            } catch (e) {
+                toast('Ошибка загрузки бэкапов', 'bg-danger');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        async function rollback(filename) {
+            if (!confirm(`Откатить изменения из бэкапа ${filename}?`)) return;
+            showLoader(true);
+            try {
+                const res = await req(`/backups/${filename}/rollback`, 'POST');
+                toast(`Восстановлено объектов: ${res.restored}`);
+                loadBackups();
+            } catch (e) {
+                toast(e.message, 'bg-danger');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        async function loadPlugins() {
+            showLoader(true);
+            try {
+                const plugins = await req('/plugins');
+                $('#plugins-list').html(plugins.map(p => `
+            <div class="col-md-4">
+                <div class="card h-100 p-3">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="bg-success bg-opacity-10 p-2 rounded text-success"><i class="fas fa-puzzle-piece fa-lg"></i></div>
+                        <h6 class="mb-0 fw-bold">${p.name}</h6>
+                    </div>
+                    <p class="text-muted small mb-0">${p.description || 'Активен и загружен'}</p>
+                </div>
+            </div>
+        `).join('') || '<div class="col-12"><div class="alert alert-warning">Нет установленных плагинов</div></div>');
+            } catch (e) {
+                toast('Ошибка загрузки плагинов', 'bg-danger');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        function openPluginTestModal() {
+            $('#plugin-test-modal').modal('show');
+            $('#plugin-test-result').addClass('d-none');
+        }
+
+        async function runPluginTest() {
+            const event = $('#plugin-test-event').val();
+            let testData;
+
+            try {
+                testData = JSON.parse($('#plugin-test-data').val());
+            } catch (e) {
+                toast('Невалидный JSON', 'bg-danger');
+                return;
+            }
+
+            showLoader(true);
+            try {
+                const res = await req('/plugins/test', 'POST', {
+                    plugin_name: 'test',
+                    event_type: event,
+                    test_data: testData
+                });
+
+                $('#plugin-test-result').removeClass('d-none');
+                $('#plugin-test-output').text(JSON.stringify(res, null, 2));
+            } catch (e) {
+                $('#plugin-test-result').removeClass('d-none');
+                $('#plugin-test-output').text(`Ошибка: ${e.message}`);
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        // --- REPORTING ---
+
+        async function loadReport(type) {
+            showLoader(true);
+            try {
+                const res = await req(`/reports/${type}`);
+                $('#report-result-card').removeClass('d-none');
+
+                let title = 'Отчет';
+                if (type === 'disabled-users') title = 'Отключенные пользователи';
+                else if (type === 'inactive-users') title = 'Неактивные пользователи';
+                else if (type === 'compliance/sox-access') title = 'SOX: Административный доступ';
+                else if (type === 'compliance/gdpr-inactive') title = 'GDPR: Устаревшие данные';
+
+                $('#report-title').text(title);
+
+                if (res.report.length === 0) {
+                    $('#report-body').html('<tr><td colspan="10" class="text-center py-3">Данных нет</td></tr>');
+                    return;
+                }
+
+                const keys = Object.keys(res.report[0]);
+                $('#report-head').html('<tr>' + keys.map(k => `<th>${k}</th>`).join('') + '</tr>');
+                $('#report-body').html(res.report.map(row =>
+                    '<tr>' + keys.map(k => `<td>${row[k]}</td>`).join('') + '</tr>'
+                ).join(''));
+
+                document.getElementById('report-result-card').scrollIntoView({ behavior: 'smooth' });
+            } catch (e) {
+                toast('Ошибка генерации отчета', 'bg-danger');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        // --- BULK OPS ---
+        let bulkData = [];
+        async function uploadExcel() {
+            const file = $('#excel-file')[0].files[0];
+            if (!file) return alert('Выберите файл');
+
+            const fd = new FormData();
+            fd.append('file', file);
+
+            showLoader(true);
+            try {
+                const res = await req('/import-excel/', 'POST', fd);
+                bulkData = res.data;
+                $('#bulk-key-col').html(res.columns.map(c => `<option value="${c}">${c}</option>`).join(''));
+
+                const headerRow = '<tr>' + res.columns.map(c => `<th>${c}</th>`).join('') + '</tr>';
+                const dataRows = bulkData.slice(0, 5).map(r =>
+                    '<tr>' + res.columns.map(c => `<td>${r[c] || ''}</td>`).join('') + '</tr>'
+                ).join('');
+
+                $('#bulk-table').html(`<thead>${headerRow}</thead><tbody>${dataRows}</tbody>`);
+                $('#bulk-preview').removeClass('d-none');
+            } catch (e) {
+                toast(e.message, 'bg-danger');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        async function execMassUpdate() {
+            const key = $('#bulk-key-col').val();
+            if (!key) return;
+
+            const items = bulkData.map(row => {
+                const fields = { ...row };
+                delete fields[key];
+                return { identifier: row[key], fields: fields };
+            });
+
+            if (!confirm(`Будет обработано ${items.length} записей. Продолжить?`)) return;
+
+            showLoader(true);
+            try {
+                const res = await req('/mass-update-exec/', 'POST', items);
+                toast(`Успешно обновлено: ${res.updated}. Проверьте ошибки в логах.`);
+            } catch (e) {
+                toast(e.message, 'bg-danger');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        async function bulkAction(action) {
+            const dns = $('.user-check:checked').map((i, el) => el.value).get();
+            if (dns.length === 0) return alert('Выберите пользователей в таблице');
+
+            if (!confirm(`Вы уверены, что хотите применить "${action}" к ${dns.length} пользователям?`)) return;
+
+            showLoader(true);
+            try {
+                await req('/ad/users/toggle', 'POST', { dns, action });
+                toast('Операция выполнена');
+                loadUsers(currentPage);
+            } catch (e) {
+                toast(e.message, 'bg-danger');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        function exportUsers() {
+            window.open(API_URL + '/ad/users/export?format=csv&filter_type=' + $('#filter-status').val(), '_blank');
+        }
+
+        // --- GLOBAL SEARCH ---
+        function handleSearchResult(type, dn) {
+            $('#global-search-results').hide();
+            if (type === 'user') editUser(dn);
+            else toast('Для групп пока нет детального просмотра');
+        }
+
+        async function changeSelfPwd() {
+            try {
+                await req('/self/password', 'POST', {
+                    old_password: $('#pwd-old').val(),
+                    new_password: $('#pwd-new').val()
+                });
+                toast('Ваш пароль успешно изменен');
+                $('#pwd-modal').modal('hide');
+            } catch (e) {
+                toast(e.message, 'bg-danger');
+            }
+        }
+    </script>
+    <script>
+        // --- SELF SERVICE ---
+
+        async function loadProfile() {
+            try {
+                const res = await req('/me');
+                $('#profile-displayName').val(res.displayName);
+                $('#profile-mail').val(res.mail);
+                $('#profile-telephoneNumber').val(res.telephoneNumber);
+                $('#profile-office').val(res.office);
+                $('#profile-description').val(res.description);
+
+                // Hide admin menu if not admin
+                // Permissions are handled by setPermissions in initApp
+                // if (res.role !== 'admin') {
+                //     $('.admin-only').hide();
+                // } else {
+                //     $('.admin-only').show();
+                // }
+            } catch (e) {
+                console.error(e);
+                toast('Ошибка загрузки профиля', 'bg-danger');
+            }
+        }
+
+        async function updateProfile(e) {
+            e.preventDefault();
+            const data = {
+                telephoneNumber: $('#profile-telephoneNumber').val(),
+                physicalDeliveryOfficeName: $('#profile-office').val(),
+                description: $('#profile-description').val()
+            };
+
+            try {
+                await req('/me/update', 'POST', data);
+                toast('Профиль обновлен');
+            } catch (e) {
+                toast(e.message, 'bg-danger');
+            }
+        }
+
+        async function loadDirectory() {
+            const q = $('#dir-search').val() || '';
+            try {
+                const res = await req(`/ad/users?query=${encodeURIComponent(q)}`);
+                const rows = res.users.map(u => `
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="user-avatar small me-2">${u.displayName.charAt(0)}</div>
+                                <div>${u.displayName}</div>
+                            </div>
+                        </td>
+                        <td><a href="mailto:${u.mail}">${u.mail}</a></td>
+                        <td>${u.telephoneNumber || ''}</td>
+                        <td>${u.department}</td>
+                    </tr>
+                `).join('');
+                $('#directory-table-body').html(rows);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function loadDirectory() {
+            // ... (existing code)
+        }
+
+        // --- APPROVALS ---
+
+        async function loadTasks() {
+            try {
+                const res = await req('/workflows/approvals/pending');
+                if (res.length === 0) {
+                    $('#tasks-table-body').html('<tr><td colspan="5" class="text-center text-muted">Нет активных задач</td></tr>');
+                    return;
+                }
+
+                $('#tasks-table-body').html(res.map(t => `
+                    <tr>
+                        <td>${t.id}</td>
+                        <td>${t.requester}</td>
+                        <td><span class="badge bg-warning text-dark">${t.action_type}</span></td>
+                        <td>${new Date(t.created_at).toLocaleString()}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success me-2" onclick="processTask(${t.id}, 'approve')"><i class="fas fa-check"></i></button>
+                            <button class="btn btn-sm btn-danger" onclick="processTask(${t.id}, 'reject')"><i class="fas fa-times"></i></button>
+                        </td>
+                    </tr>
+                `).join(''));
+            } catch (e) {
+                console.error(e);
+                toast('Ошибка загрузки задач', 'bg-danger');
+            }
+        }
+
+        async function processTask(id, decision) {
+            const comment = prompt('Комментарий (необязательно):');
+            try {
+                await req(`/workflows/approvals/${id}/${decision}`, 'POST', { comment: comment || '' });
+                toast(`Заявка ${decision === 'approve' ? 'подтверждена' : 'отклонена'}`);
+                loadTasks();
+            } catch (e) {
+                toast(e.message, 'bg-danger');
+            }
+        }
+
+        // Инициализация Drag-and-Drop для дашборда
+        document.addEventListener('DOMContentLoaded', function () {
+            const el = document.getElementById('dashboard-widgets');
+            if (el) {
+                Sortable.create(el, {
+                    animation: 150,
+                    ghostClass: 'bg-light',
+                    onEnd: function (evt) {
+                        saveDashboardOrder();
+                    }
+                });
+                loadDashboardOrder();
+            }
+        });
+
+        function saveDashboardOrder() {
+            const el = document.getElementById('dashboard-widgets');
+            const order = [];
+            // Сохраняем порядок по каким-то идентификаторам, 
+            // но так как у нас статические карточки, просто сохраним индексы или HTML (не очень хорошо)
+            // Лучше добавить data-id к колонкам
+            // Для простоты пока просто логируем
+            console.log('Dashboard order saved (stub)');
+            // В реальной реализации:
+            // 1. Добавить data-id="widget-1" и т.д. к col-md-3
+            // 2. Собрать массив ID
+            // 3. localStorage.setItem('dashboard-order', JSON.stringify(order));
+        }
+
+        function loadDashboardOrder() {
+            // Восстановление порядка
+            console.log('Dashboard order loaded (stub)');
+        }
+
+        // ==================== VIRTUAL FOLDERS (TAGS) ====================
+
+        let allTags = [];
+
+        async function loadTags() {
+            try {
+                allTags = await req('/tags');
+                console.log('Tags loaded:', allTags.length);
+                // renderTagsSidebar(); // Uncomment when sidebar is ready
+            } catch (e) {
+                console.error('Failed to load tags:', e);
+            }
+        }
+
+        async function createTag() {
+            const name = prompt('Название виртуальной папки:');
+            if (!name) return;
+
+            const description = prompt('Описание (опционально):') || '';
+            const color = '#4f46e5'; // Default color
+
+            try {
+                await req('/tags', 'POST', { name, description, color, icon: 'fa-tag' });
+                toast('Виртуальная папка создана', 'bg-success');
+                loadTags();
+            } catch (e) {
+                toast(e.message || 'Ошибка создания', 'bg-danger');
+            }
+        }
+
+        async function addTagToUser(dn, tagName) {
+            try {
+                await req(`/tags/objects/${encodeURIComponent(dn)}/tags`, 'POST', { tag_name: tagName });
+                toast(`Тег "${tagName}" добавлен`, 'bg-success');
+            } catch (e) {
+                toast(e.message || 'Ошибка', 'bg-danger');
+            }
+        }
+
+        // ==================== USER CREATION WIZARD ====================
+
+        let currentWizardStep = 1;
+        let wizard Data = {};
+        let userTemplates = [];
+        let selectedTemplate = null;
+
+        async function openUserWizard() {
+            currentWizardStep = 1;
+            wizardData = {};
+            selectedTemplate = null;
+
+            await loadUserTemplates();
+            $('#user-wizard-modal').modal('show');
+        }
+
+        async function loadUserTemplates() {
+            try {
+                userTemplates = await req('/user-templates');
+                renderTemplates();
+            } catch (e) {
+                console.error('Failed to load templates:', e);
+                userTemplates = [];
+            }
+        }
+
+        function renderTemplates() {
+            const grid = $('#templates-grid');
+            grid.empty();
+
+            userTemplates.forEach(t => {
+                grid.append(`
+                    <div class="col-md-4">
+                        <div class="template-card" data-template-id="${t.id}" onclick="selectTemplate('${t.id}')">
+                            <i class="fas ${t.icon} fa-3x text-primary mb-3"></i>
+                            <h5>${t.name}</h5>
+                            <p class="text-muted small">${t.description}</p>
+                            <span class="badge bg-info">${t.category}</span>
+                        </div>
+                    </div>
+                `);
+            });
+
+            // Add "Start from scratch"
+            grid.append(`
+                <div class="col-md-4">
+                    <div class="template-card" data-template-id="blank" onclick="selectTemplate(null)">
+                        <i class="fas fa-user-plus fa-3x text-secondary mb-3"></i>
+                        <h5>Начать с нуля</h5>
+                        <p class="text-muted small">Без шаблона</p>
+                    </div>
+                </div>
+            `);
+        }
+
+        function selectTemplate(templateId) {
+            $('.template-card').removeClass('selected');
+
+            if (templateId) {
+                $(`.template-card[data-template-id="${templateId}"]`).addClass('selected');
+                const template = userTemplates.find(t => t.id === templateId);
+                if (template) {
+                    wizardData = { ...template.default_values };
+                }
+            } else {
+                $(`.template-card[data-template-id="blank"]`).addClass('selected');
+                wizardData = {};
+            }
+
+            selectedTemplate = templateId;
+        }
+
+        function nextWizardStep() {
+            if (currentWizardStep === 1 && !selectedTemplate && $('.template-card.selected').length === 0) {
+                toast('Выберите шаблон или "Начать с нуля"', 'bg-warning');
+                return;
+            }
+
+            if (currentWizardStep === 2) {
+                if (!$('#wiz-givenName').val().trim()) {
+                    toast('Введите имя', 'bg-warning');
+                    return;
+                }
+                if (!$('#wiz-sn').val().trim()) {
+                    toast('Введите фамилию', 'bg-warning');
+                    return;
+                }
+                if (!$('#wiz-sAMAccountName').val().trim()) {
+                    toast('Введите логин', 'bg-warning');
+                    return;
+                }
+                if (!$('#wiz-password').val()) {
+                    toast('Введите пароль', 'bg-warning');
+                    return;
+                }
+
+                wizardData.givenName = $('#wiz-givenName').val().trim();
+                wizardData.sn = $('#wiz-sn').val().trim();
+                wizardData.sAMAccountName = $('#wiz-sAMAccountName').val().trim();
+                wizardData.password = $('#wiz-password').val();
+                wizardData.cn = `${wizardData.givenName} ${wizardData.sn}`;
+            }
+
+            if (currentWizardStep === 3) {
+                wizardData.mail = $('#wiz-mail').val().trim();
+                wizardData.telephoneNumber = $('#wiz-telephoneNumber').val().trim();
+                wizardData.department = $('#wiz-department').val().trim();
+                wizardData.title = $('#wiz-title').val().trim();
+                wizardData.company = $('#wiz-company').val().trim() || 'VibeCode';
+            }
+
+            if (currentWizardStep === 4) {
+                renderReviewTable();
+            }
+
+            currentWizardStep++;
+            showWizardStep(currentWizardStep);
+        }
+
+        function prevWizardStep() {
+            currentWizardStep--;
+            showWizardStep(currentWizardStep);
+        }
+
+        function showWizardStep(stepNum) {
+            $('.wizard-content').addClass('d-none');
+            $(`#wizard-step-${stepNum}`).removeClass('d-none');
+
+            $('.wizard-step-circle').removeClass('active completed');
+            for (let i = 1; i < stepNum; i++) {
+                $(`.wizard-step[data-step="${i}"] .wizard-step-circle`).addClass('completed');
+            }
+            $(`.wizard-step[data-step="${stepNum}"] .wizard-step-circle`).addClass('active');
+
+            $('#wiz-btn-prev').toggle(stepNum > 1);
+            $('#wiz-btn-next').toggle(stepNum < 5);
+            $('#wiz-btn-create').toggleClass('d-none', stepNum !== 5);
+
+            // Pre-fill
+            if (stepNum === 2) {
+                $('#wiz-givenName').val(wizardData.givenName || '');
+                $('#wiz-sn').val(wizardData.sn || '');
+                $('#wiz-sAMAccountName').val(wizardData.sAMAccountName || '');
+            }
+        }
+
+        function renderReviewTable() {
+            const table = $('#wiz-review-table');
+            table.empty();
+
+            const fields = [
+                ['Имя', wizardData.givenName],
+                ['Фамилия', wizardData.sn],
+                ['Логин', wizardData.sAMAccountName],
+                ['Email', wizardData.mail || '—'],
+                ['Телефон', wizardData.telephoneNumber || '—'],
+                ['Отдел', wizardData.department || '—'],
+                ['Должность', wizardData.title || '—'],
+                ['Компания', wizardData.company || '—']
+            ];
+
+            fields.forEach(([label, value]) => {
+                table.append(`
+                    <tr>
+                        <th class="bg-light" width="30%">${label}</th>
+                        <td>${value}</td>
+                    </tr>
+                `);
+            });
+        }
+
+        async function createUserFromWizard() {
+            try {
+                $('#progress-modal').modal('show');
+                $('#progress-message').text('Создание пользователя...');
+                $('#progress-bar').css('width', '50%');
+
+                const createData = {
+                    givenName: wizardData.givenName,
+                    sn: wizardData.sn,
+                    cn: wizardData.cn,
+                    sAMAccountName: wizardData.sAMAccountName,
+                    displayName: wizardData.cn,
+                    password: wizardData.password,
+                    enabled: true
+                };
+
+                if (wizardData.mail) createData.mail = wizardData.mail;
+                if (wizardData.telephoneNumber) createData.telephoneNumber = wizardData.telephoneNumber;
+                if (wizardData.department) createData.department = wizardData.department;
+                if (wizardData.title) createData.title = wizardData.title;
+                if (wizardData.company) createData.company = wizardData.company;
+
+                await req('/ad/users/create', 'POST', createData);
+
+                $('#progress-bar').css('width', '100%');
+                $('#progress-message').text('Готово!');
+
+                setTimeout(() => {
+                    $('#progress-modal').modal('hide');
+                    $('#user-wizard-modal').modal('hide');
+                    toast('Пользователь успешно создан!', 'bg-success');
+                    loadUsers(1);
+                }, 1000);
+            } catch (e) {
+                $('#progress-modal').modal('hide');
+                toast(e.message || 'Ошибка создания', 'bg-danger');
+            }
+        }
+
+        function generatePassword() {
+            const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%";
+            let password = "";
+            for (let i = 0; i < 12; i++) {
+                password += charset.charAt(Math.floor(Math.random() * charset.length));
+            }
+            $('#wiz-password').val(password);
+            $('#wiz-password').attr('type', 'text');
+            toast('Пароль сгенерирован', 'bg-success');
+        }
+
+        function closeUserWizard() {
+            currentWizardStep = 1;
+            wizardData = {};
+            selectedTemplate = null;
+            $('.template-card').removeClass('selected');
+        }
+
+        // Auto-generate username
+        $('#wiz-givenName, #wiz-sn').on('input', function () {
+            const firstName = $('#wiz-givenName').val().toLowerCase().trim();
+            const lastName = $('#wiz-sn').val().toLowerCase().trim();
+
+            if (firstName && lastName) {
+                const username = `${firstName}.${lastName}`.replace(/[^a-z.]/g, '');
+                $('#wiz-sAMAccountName').val(username);
+            }
+        });
+
+        // Initialize on page load
+        $(document).ready(function () {
+            loadTags();
+        });
+    </script>
+</body>
+
+</html>
