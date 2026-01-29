@@ -23,7 +23,7 @@ class ApiClient {
     }
     
     async createUser(data) {
-        return this.request('/users/create', 'POST', data);
+        return this.request('/ad/users/', 'POST', data);
     }
 }
 

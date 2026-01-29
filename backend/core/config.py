@@ -1,6 +1,11 @@
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List, Dict, Any  # <-- Добавь эту строку
+from dotenv import load_dotenv
+
+# Загружаем .env из корня проекта
+env_path = Path(__file__).parent.parent.parent / ".env"
+load_dotenv(dotenv_path=env_path, override=True)
 
 
 class Settings:

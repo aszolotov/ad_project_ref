@@ -17,7 +17,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-limiter = Limiter(key_func=get_remote_address)
+limiter = Limiter(key_func=get_remote_address, config_filename=None)
 
 router = APIRouter(prefix=settings.API_V1_STR, tags=["auth"])
 
@@ -103,7 +103,7 @@ def get_current_user(request: Request) -> dict:
         
     return {"username": payload["sub"], "role": payload.get("role", "user")}
 
-    return {"username": payload["sub"], "role": payload.get("role", "user")}
+    # return {"username": payload["sub"], "role": payload.get("role", "user")}
 
 from backend.core.security import ROLES
 
